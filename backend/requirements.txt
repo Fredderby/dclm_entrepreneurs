@@ -1,0 +1,24 @@
+# Core FastAPI
+fastapi>=0.100.0,<0.110.0
+uvicorn>=0.23.2,<0.30.0
+python-multipart>=0.0.6
+corsheaders>=4.3.0
+
+# Data handling
+pandas>=2.0.0
+openpyxl>=3.1.2
+xlsxwriter>=3.1.2
+numpy>=1.24.0
+
+# Google Sheets API (MISSING PACKAGES ADDED HERE)
+gspread>=5.10.0
+google-auth>=2.22.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+google-api-python-client>=2.95.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Other utilities
+requests>=2.31.0
