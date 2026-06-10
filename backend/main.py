@@ -31,7 +31,7 @@ app = FastAPI(title="DCLM-Ghana Entrepreneurship Database")
 # --------------------------
 # CORS
 # --------------------------
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3001").split(",")
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
