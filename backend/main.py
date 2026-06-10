@@ -18,33 +18,24 @@ from schemas import SheetDataResponse
 # --------------------------
 # INITIALIZE
 # --------------------------
-load_dotenv()  # ✅ Load environment variables first
+load_dotenv()
 
-# ✅ Add safety check — prevent crash if Google Sheets fails
-try:
-    sample_data, sheet_headers = get_sheet_data()
-    SheetData = create_dynamic_model(sheet_headers)
-except Exception as e:
-    print(f"⚠️ Warning: Could not connect to Google Sheets on start: {e}")
-    sample_data = []
-    sheet_headers = []
-    SheetData = None
+# Create tables
+Base.metadata.create_all(bind=engine)
 
-# ✅ Create tables only if model exists
-if SheetData:
-    Base.metadata.create_all(bind=engine)
+# Defer Google Sheets connection - will be set by /sync-sheets/ or first request
+SheetData = None
 
 app = FastAPI(title="DCLM-Ghana Entrepreneurship Database")
 
 # --------------------------
-# ✅ FIXED CORS — MORE SECURE & RELIABLE
+# CORS
 # --------------------------
-# Instead of "*", read from .env (matches your setup)
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3001").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # ✅ Fixed: no wildcard in production
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,7 +46,7 @@ app.add_middleware(
 # --------------------------
 @app.get("/")
 def root():
-    return {"status": "✅ Backend Running", "time": datetime.utcnow().isoformat()}
+    return {"status": "Backend Running", "time": datetime.utcnow().isoformat()}
 
 @app.get("/data/", response_model=List[SheetDataResponse])
 def get_all_data(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
@@ -97,20 +88,16 @@ def sync_sheets_to_db(db: Session = Depends(get_db)):
 def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
         SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-        
-        # ✅ FIXED: Read from .env exactly — matches your file
+
         SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
         if not SHEET_ID:
             raise ValueError("GOOGLE_SHEET_ID not set in .env")
 
-        # ✅ FIXED: Proper private key parsing (critical fix!)
         private_key = os.getenv("GOOGLE_PRIVATE_KEY", "")
         if not private_key:
             raise ValueError("GOOGLE_PRIVATE_KEY not set in .env")
-        # Remove quotes, fix newlines — exactly how we set it
-        private_key = private_key.replace('"', '').replace('\\n', '\n').strip()
+        private_key = private_key.replace('"', '').replace("'", "").replace("\\n", "\n").strip()
 
-        # ✅ FIXED: Use correct env variable names
         creds = Credentials.from_service_account_info({
             "type": "service_account",
             "project_id": os.getenv("GOOGLE_PROJECT_ID", ""),
@@ -124,7 +111,6 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_X509_CERT_URL", "")
         }, scopes=SCOPES)
 
-        # ✅ Authorize and open sheet safely
         gc = gspread.authorize(creds)
         sheet = gc.open_by_key(SHEET_ID).sheet1
 
@@ -163,8 +149,7 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
         if not headers or headers == []:
             headers = list(flat.keys())
             sheet.append_row(headers)
-        
-        # ✅ Match headers correctly
+
         row_values = []
         for h in headers:
             key = h.strip().replace(" ", "_").lower()
@@ -176,8 +161,8 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             row_id = hashlib.md5(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
             if not db.query(SheetData).filter_by(row_id=row_id).first():
                 db_fields: dict[str, str] = {
-                    "row_id": row_id, 
-                    "extra_data": "{}", 
+                    "row_id": row_id,
+                    "extra_data": "{}",
                     "synced_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
                 }
                 for key, value in flat.items():
@@ -188,8 +173,7 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
                 db.add(SheetData(**db_fields))
                 db.commit()
 
-        return {"status": "success", "message": "✅ Form submitted successfully"}
+        return {"status": "success", "message": "Form submitted successfully"}
     except Exception as e:
-        # ✅ Better error logging
-        print(f"❌ Error in /add-to-sheet/: {str(e)}")
+        print(f"Error in /add-to-sheet/: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
