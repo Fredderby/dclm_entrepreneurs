@@ -9,8 +9,7 @@ services:
     environment:
       - PORT=8000
       - CORS_ORIGINS=http://127.0.0.1:3001,http://localhost:3001
-    env_file:
-      - ./backend/.env
+    # Env vars are set in Dokploy dashboard
     networks:
       - dclm-net
 
