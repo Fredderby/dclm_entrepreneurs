@@ -15,9 +15,9 @@ SCOPES = [
 
 def get_sheet_data():
     """Fetch all records from the Google Sheet and return (data, headers)."""
-    SERVICE_ACCOUNT_EMAIL = os.getenv("GOOGLE_SERVICE_ACCOUNT_EMAIL")
-    PRIVATE_KEY = os.getenv("GOOGLE_PRIVATE_KEY", "")
-    SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+    SERVICE_ACCOUNT_EMAIL = os.getenv("CLIENT_EMAIL")
+    PRIVATE_KEY = os.getenv("PRIVATE_KEY", "")
+    SHEET_ID = os.getenv("GOOGLE_SHEET_ID") or "1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A"
 
     # Clean private key
     private_key = PRIVATE_KEY.replace('"', '').replace("'", "").replace("\\n", "\n").strip()
@@ -40,7 +40,7 @@ def get_sheet_data():
 
 
 # ---------------------------------------------------------------------------
-# Debug / diagnostics — only runs when this file is executed directly
+# Debug / diagnostics - only runs when this file is executed directly
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     from google.oauth2 import service_account
@@ -50,8 +50,8 @@ if __name__ == "__main__":
     creds = Credentials.from_service_account_info(
         {
             "type": "service_account",
-            "client_email": os.getenv("GOOGLE_SERVICE_ACCOUNT_EMAIL"),
-            "private_key": os.getenv("GOOGLE_PRIVATE_KEY", "").replace('"', "").replace("'", "").replace("\\n", "\n").strip(),
+            "client_email": os.getenv("CLIENT_EMAIL"),
+            "private_key": os.getenv("PRIVATE_KEY", "").replace('"', "").replace("'", "").replace("\\n", "\n").strip(),
             "token_uri": "https://oauth2.googleapis.com/token",
         },
         scopes=SCOPES,

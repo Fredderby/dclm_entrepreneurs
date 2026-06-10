@@ -89,26 +89,26 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
         SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-        SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+        SHEET_ID = os.getenv("GOOGLE_SHEET_ID") or "1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A"
         if not SHEET_ID:
             raise ValueError("GOOGLE_SHEET_ID not set in .env")
 
-        private_key = os.getenv("GOOGLE_PRIVATE_KEY", "")
+        private_key = os.getenv("PRIVATE_KEY", "")
         if not private_key:
             raise ValueError("GOOGLE_PRIVATE_KEY not set in .env")
         private_key = private_key.replace('"', '').replace("'", "").replace("\\n", "\n").strip()
 
         creds = Credentials.from_service_account_info({
             "type": "service_account",
-            "project_id": os.getenv("GOOGLE_PROJECT_ID", ""),
-            "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID", ""),
+            "project_id": os.getenv("PROJECT_ID", ""),
+            "private_key_id": os.getenv("PRIVATE_KEY_ID", ""),
             "private_key": private_key,
-            "client_email": os.getenv("GOOGLE_SERVICE_ACCOUNT_EMAIL", ""),
-            "client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+            "client_email": os.getenv("CLIENT_EMAIL", ""),
+            "client_id": os.getenv("CLIENT_ID", ""),
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_X509_CERT_URL", "")
+            "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL", "")
         }, scopes=SCOPES)
 
         gc = gspread.authorize(creds)
