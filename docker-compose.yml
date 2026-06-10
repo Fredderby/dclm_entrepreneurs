@@ -6,29 +6,41 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: dclm-backend
+    hostname: dclm-backend  # ✅ ADD THIS
     restart: always
     ports:
       - "9000:8000"
+    expose:
+      - "8000"  # ✅ ENSURE INTERNAL PORT IS OPEN
     environment:
       - PORT=8000
       - CORS_ORIGINS=http://127.0.0.1:3001,http://localhost:3001
-      # Your Google env vars here
+      # YOUR GOOGLE ENV VARS HERE
+      - GOOGLE_SHEET_ID=1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A
+      - GOOGLE_PROJECT_ID=your-id
+      - GOOGLE_PRIVATE_KEY_ID=your-key-id
+      - GOOGLE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...YOUR KEY...\n-----END PRIVATE KEY-----\n
+      - GOOGLE_SERVICE_ACCOUNT_EMAIL=your@serviceaccount.com
     networks:
-      - dclm-network
+      - dclm-net
 
   dclm-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: dclm-frontend
+    hostname: dclm-frontend  # ✅ ADD THIS
     restart: always
     ports:
       - "3001:80"
+    environment:
+      - REACT_APP_API_URL=/api
     depends_on:
       - dclm-backend
     networks:
-      - dclm-network
+      - dclm-net
 
 networks:
-  dclm-network:
+  dclm-net:
+    name: entrepreneur-dclm-a1spks_default  # ✅️ EXACT NETWORK NAME FROM YOUR IMAGE
     driver: bridge
