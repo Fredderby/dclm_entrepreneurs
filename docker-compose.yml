@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   dclm-backend:
@@ -10,16 +11,10 @@ services:
       - "9000:8000"
     environment:
       - PORT=8000
-      - CORS_ORIGINS=http://localhost:3001,http://your-domain.com
-    volumes:
-      - ./backend:/app
+      - CORS_ORIGINS=http://127.0.0.1:3001,http://localhost:3001
+      # Your Google env vars here
     networks:
       - dclm-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   dclm-frontend:
     build:
@@ -29,8 +24,6 @@ services:
     restart: always
     ports:
       - "3001:80"
-    environment:
-      - REACT_APP_API_URL=http://your-server-ip:9000
     depends_on:
       - dclm-backend
     networks:
