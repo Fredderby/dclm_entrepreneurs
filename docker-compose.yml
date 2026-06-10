@@ -8,10 +8,6 @@ services:
       - "9000:8000"
     environment:
       - PORT=8000
-      - CORS_ORIGINS=http://127.0.0.1:3001,http://localhost:3001
-    # Env vars are set in Dokploy dashboard
-    networks:
-      - dclm-net
 
   dclm-frontend:
     build:
@@ -20,13 +16,5 @@ services:
     restart: always
     ports:
       - "3001:80"
-    environment:
-      - REACT_APP_API_URL=/api
     depends_on:
       - dclm-backend
-    networks:
-      - dclm-net
-
-networks:
-  dclm-net:
-    driver: bridge
