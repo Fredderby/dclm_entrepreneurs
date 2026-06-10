@@ -1,0 +1,27 @@
+# Environment variables
+.env
+backend/.env
+
+# Python virtual environment
+venv/
+backend/venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Database
+*.db
+*.sqlite
+backend/test.db
+
+# IDE
+.vscode/
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
