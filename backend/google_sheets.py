@@ -1,37 +1,35 @@
-import os
 import gspread
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
+import os
 
+# Load environment variables
 load_dotenv()
 
+# Define scope
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.readonly"
+    "https://www.googleapis.com/auth/drive"
 ]
 
-SHEET_ID = "1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A"
+# ✅ READ FROM .env — matches exactly what we wrote
+SERVICE_ACCOUNT_EMAIL = os.getenv("GOOGLE_SERVICE_ACCOUNT_EMAIL")
+PRIVATE_KEY = os.getenv("GOOGLE_PRIVATE_KEY")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 
-def get_sheet_data():
-    raw_key = os.getenv("PRIVATE_KEY", "")
-    private_key = raw_key.replace('"', '').replace("'", "").replace('\\n', '\n').strip()
-
-    credentials_info = {
+# Create credentials
+credentials = Credentials.from_service_account_info(
+    {
         "type": "service_account",
-        "project_id": os.getenv("PROJECT_ID", ""),
-        "private_key_id": os.getenv("PRIVATE_KEY_ID", ""),
-        "private_key": private_key,
-        "client_email": os.getenv("CLIENT_EMAIL", ""),
-        "client_id": os.getenv("CLIENT_ID", ""),
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL", "")
-    }
+        "client_email": SERVICE_ACCOUNT_EMAIL,
+        "private_key": PRIVATE_KEY,
+        "token_uri": "https://oauth2.googleapis.com/token"
+    },
+    scopes=SCOPES
+)
 
-    creds = Credentials.from_service_account_info(credentials_info, scopes=SCOPES)
-    client = gspread.authorize(creds)
-    sheet = client.open_by_key(SHEET_ID).sheet1
-    data = sheet.get_all_records()
-    headers = sheet.row_values(1)
-    return data, headers
+# Authorize client
+gc = gspread.authorize(credentials)
+
+# Open sheet
+sheet = gc.open_by_key(SHEET_ID)
