@@ -14,7 +14,7 @@ SHEET_ID = "1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A"
 
 def get_sheet_data():
     raw_key = os.getenv("PRIVATE_KEY", "")
-    private_key = raw_key.replace('"', '').replace("'", "").strip()
+    private_key = raw_key.replace('"', '').replace("'", "").replace('\\n', '\n').strip()
 
     credentials_info = {
         "type": "service_account",

@@ -76,7 +76,7 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
         SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
         SHEET_ID = "1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A"
-        private_key = os.getenv("PRIVATE_KEY", "").replace('"', '').strip()
+        private_key = os.getenv("PRIVATE_KEY", "").replace('"', '').replace('\\n', '\n').strip()
         creds = Credentials.from_service_account_info({
             "type": "service_account",
             "project_id": os.getenv("PROJECT_ID", ""),
