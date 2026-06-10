@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# ✅ SET CORRECT API URL DURING BUILD — NO MORE BAD GATEWAY
+#  SET CORRECT API URL DURING BUILD  NO MORE BAD GATEWAY
 # This overrides whatever was in your local .env
 ARG REACT_APP_API_URL=http://localhost:9000
 ENV REACT_APP_API_URL=http://localhost:9000
@@ -21,7 +21,7 @@ RUN npm run build
 # Step 2: Production Nginx
 FROM nginx:alpine
 
-# ✅ ADD CUSTOM NGINX CONFIG — THIS IS WHAT FIXES BAD GATEWAY
+#  ADD CUSTOM NGINX CONFIG  THIS IS WHAT FIXES BAD GATEWAY
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built files
