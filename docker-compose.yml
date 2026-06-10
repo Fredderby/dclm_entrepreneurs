@@ -6,8 +6,6 @@ services:
     restart: always
     ports:
       - "9000:8000"
-    environment:
-      - PORT=8000
 
   dclm-frontend:
     build:
@@ -16,5 +14,3 @@ services:
     restart: always
     ports:
       - "3001:80"
-    depends_on:
-      - dclm-backend
