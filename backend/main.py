@@ -18,19 +18,33 @@ from schemas import SheetDataResponse
 # --------------------------
 # INITIALIZE
 # --------------------------
-load_dotenv()
-sample_data, sheet_headers = get_sheet_data()
-SheetData = create_dynamic_model(sheet_headers)
-Base.metadata.create_all(bind=engine)
+load_dotenv()  # ✅ Load environment variables first
+
+# ✅ Add safety check — prevent crash if Google Sheets fails
+try:
+    sample_data, sheet_headers = get_sheet_data()
+    SheetData = create_dynamic_model(sheet_headers)
+except Exception as e:
+    print(f"⚠️ Warning: Could not connect to Google Sheets on start: {e}")
+    sample_data = []
+    sheet_headers = []
+    SheetData = None
+
+# ✅ Create tables only if model exists
+if SheetData:
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="DCLM-Ghana Entrepreneurship Database")
 
 # --------------------------
-# CORS
+# ✅ FIXED CORS — MORE SECURE & RELIABLE
 # --------------------------
+# Instead of "*", read from .env (matches your setup)
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3001").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,  # ✅ Fixed: no wildcard in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,12 +53,20 @@ app.add_middleware(
 # --------------------------
 # ENDPOINTS
 # --------------------------
+@app.get("/")
+def root():
+    return {"status": "✅ Backend Running", "time": datetime.utcnow().isoformat()}
+
 @app.get("/data/", response_model=List[SheetDataResponse])
 def get_all_data(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+    if not SheetData:
+        raise HTTPException(status_code=503, detail="Database model not initialized (Google Sheets connection failed)")
     return db.query(SheetData).order_by(SheetData.id.desc()).offset(skip).limit(limit).all()
 
 @app.post("/sync-sheets/")
 def sync_sheets_to_db(db: Session = Depends(get_db)):
+    if not SheetData:
+        raise HTTPException(status_code=503, detail="Database model not initialized")
     try:
         sheet_data, headers = get_sheet_data()
         added = 0
@@ -58,7 +80,7 @@ def sync_sheets_to_db(db: Session = Depends(get_db)):
             for key, value in row.items():
                 safe_key = key.strip().replace(" ", "_").lower()
                 safe_value = str(value) if value is not None else ""
-                if safe_key in SheetData.__dict__:
+                if hasattr(SheetData, safe_key):
                     db_fields[safe_key] = safe_value
                 else:
                     extra_fields[key] = safe_value
@@ -75,21 +97,36 @@ def sync_sheets_to_db(db: Session = Depends(get_db)):
 def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
         SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-        SHEET_ID = "1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A"
-        private_key = os.getenv("PRIVATE_KEY", "").replace('"', '').replace('\\n', '\n').strip()
+        
+        # ✅ FIXED: Read from .env exactly — matches your file
+        SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+        if not SHEET_ID:
+            raise ValueError("GOOGLE_SHEET_ID not set in .env")
+
+        # ✅ FIXED: Proper private key parsing (critical fix!)
+        private_key = os.getenv("GOOGLE_PRIVATE_KEY", "")
+        if not private_key:
+            raise ValueError("GOOGLE_PRIVATE_KEY not set in .env")
+        # Remove quotes, fix newlines — exactly how we set it
+        private_key = private_key.replace('"', '').replace('\\n', '\n').strip()
+
+        # ✅ FIXED: Use correct env variable names
         creds = Credentials.from_service_account_info({
             "type": "service_account",
-            "project_id": os.getenv("PROJECT_ID", ""),
-            "private_key_id": os.getenv("PRIVATE_KEY_ID", ""),
+            "project_id": os.getenv("GOOGLE_PROJECT_ID", ""),
+            "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID", ""),
             "private_key": private_key,
-            "client_email": os.getenv("CLIENT_EMAIL", ""),
-            "client_id": os.getenv("CLIENT_ID", ""),
+            "client_email": os.getenv("GOOGLE_SERVICE_ACCOUNT_EMAIL", ""),
+            "client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL", "")
+            "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_X509_CERT_URL", "")
         }, scopes=SCOPES)
-        sheet = gspread.authorize(creds).open_by_key(SHEET_ID).sheet1
+
+        # ✅ Authorize and open sheet safely
+        gc = gspread.authorize(creds)
+        sheet = gc.open_by_key(SHEET_ID).sheet1
 
         # Flatten dynamic arrays into numbered fields
         flat = {
@@ -126,20 +163,33 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
         if not headers or headers == []:
             headers = list(flat.keys())
             sheet.append_row(headers)
-        row_values = [str(flat.get(h.replace(" ", "_").lower(), "")) for h in headers]
+        
+        # ✅ Match headers correctly
+        row_values = []
+        for h in headers:
+            key = h.strip().replace(" ", "_").lower()
+            row_values.append(str(flat.get(key, "")))
         sheet.append_row(row_values)
 
-        # Save to DB
-        row_id = hashlib.md5(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
-        if not db.query(SheetData).filter_by(row_id=row_id).first():
-            db_fields: dict[str, str] = {"row_id": row_id, "extra_data": "{}", "synced_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}
-            for key, value in flat.items():
-                safe_key = key.strip().replace(" ", "_").lower()
-                safe_value = str(value) if value is not None else ""
-                if safe_key in SheetData.__dict__: db_fields[safe_key] = safe_value
-            db.add(SheetData(**db_fields))
-            db.commit()
+        # Save to DB only if model exists
+        if SheetData:
+            row_id = hashlib.md5(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
+            if not db.query(SheetData).filter_by(row_id=row_id).first():
+                db_fields: dict[str, str] = {
+                    "row_id": row_id, 
+                    "extra_data": "{}", 
+                    "synced_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+                }
+                for key, value in flat.items():
+                    safe_key = key.strip().replace(" ", "_").lower()
+                    safe_value = str(value) if value is not None else ""
+                    if hasattr(SheetData, safe_key):
+                        db_fields[safe_key] = safe_value
+                db.add(SheetData(**db_fields))
+                db.commit()
 
         return {"status": "success", "message": "✅ Form submitted successfully"}
     except Exception as e:
+        # ✅ Better error logging
+        print(f"❌ Error in /add-to-sheet/: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
