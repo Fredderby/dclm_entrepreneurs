@@ -9,8 +9,8 @@ RUN npm install
 
 #  SET CORRECT API URL DURING BUILD  NO MORE BAD GATEWAY
 # This overrides whatever was in your local .env
-ARG REACT_APP_API_URL=http://127.0.0.1:9000
-ENV REACT_APP_API_URL=http://127.0.0.1:9000
+ARG REACT_APP_API_URL=http://ent.dclmgh-report.com:9000
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
 
 # Copy source code
 COPY . .
