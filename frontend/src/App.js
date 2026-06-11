@@ -47,13 +47,6 @@ const zone_region_divisions = {
 };
 
 function App() {
-  const [settings, setSettings] = useState({
-    num_entrepreneurs: 2,
-    num_professionals: 2
-  });
-  const [step, setStep] = useState(1);
-
-  // ✅ DROPDOWN STATE
   const [selectedZone, setSelectedZone] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("");
@@ -62,12 +55,19 @@ function App() {
     region_division_group_name: "",
     enterprise_coordinator_name: "",
     enterprise_coordinator_contact: "",
-    entrepreneurs: [],
-    professionals: [],
-    investment_opportunities: "",
-    diaspora_name: "",
-    diaspora_country: "",
-    diaspora_skill_interest: ""
+    // ✅ ONLY ONE ENTREPRENEUR
+    entrepreneur: {
+      full_name: "",
+      phone_whatsapp: "",
+      business_name_type: "",
+      sector: "",
+      years_in_business: "",
+      can_mentor: ""
+    },
+    professionals: [
+      { full_name: "", skill_profession: "", willing_to_train: "" },
+      { full_name: "", skill_profession: "", willing_to_train: "" }
+    ]
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -92,23 +92,22 @@ function App() {
     if (!formData.enterprise_coordinator_contact.trim()) errors.push("• Coordinator Contact is required");
     else if (!isValidPhone(formData.enterprise_coordinator_contact)) errors.push("• Coordinator Contact must be exactly 10 digits");
 
-    // Validate Entrepreneurs
-    formData.entrepreneurs.forEach((ent, idx) => {
-      if (!ent.full_name.trim()) errors.push(`• Entrepreneur ${idx+1}: Full Name required`);
-      else if (hasNumbers(ent.full_name)) errors.push(`• Entrepreneur ${idx+1}: Name cannot have numbers`);
+    // ✅ VALIDATE SINGLE ENTREPRENEUR
+    const ent = formData.entrepreneur;
+    if (!ent.full_name.trim()) errors.push("• Entrepreneur: Full Name required");
+    else if (hasNumbers(ent.full_name)) errors.push("• Entrepreneur: Name cannot have numbers");
 
-      if (!ent.phone_whatsapp.trim()) errors.push(`• Entrepreneur ${idx+1}: Phone required`);
-      else if (!isValidPhone(ent.phone_whatsapp)) errors.push(`• Entrepreneur ${idx+1}: Phone must be 10 digits`);
+    if (!ent.phone_whatsapp.trim()) errors.push("• Entrepreneur: Phone required");
+    else if (!isValidPhone(ent.phone_whatsapp)) errors.push("• Entrepreneur: Phone must be 10 digits");
 
-      if (!ent.business_name_type.trim()) errors.push(`• Entrepreneur ${idx+1}: Business Name required`);
-      else if (hasNumbers(ent.business_name_type)) errors.push(`• Entrepreneur ${idx+1}: Business Name cannot have numbers`);
+    if (!ent.business_name_type.trim()) errors.push("• Entrepreneur: Business Name required");
+    else if (hasNumbers(ent.business_name_type)) errors.push("• Entrepreneur: Business Name cannot have numbers");
 
-      if (!ent.sector) errors.push(`• Entrepreneur ${idx+1}: Select Business Sector`);
-      if (!ent.years_in_business) errors.push(`• Entrepreneur ${idx+1}: Select Years in Business`);
-      if (!ent.can_mentor) errors.push(`• Entrepreneur ${idx+1}: Select Mentorship option`);
-    });
+    if (!ent.sector) errors.push("• Entrepreneur: Select Business Sector");
+    if (!ent.years_in_business) errors.push("• Entrepreneur: Select Years in Business");
+    if (!ent.can_mentor) errors.push("• Entrepreneur: Select Mentorship option");
 
-    // Validate Professionals
+    // ✅ VALIDATE PROFESSIONALS
     formData.professionals.forEach((prof, idx) => {
       if (!prof.full_name.trim()) errors.push(`• Professional ${idx+1}: Full Name required`);
       else if (hasNumbers(prof.full_name)) errors.push(`• Professional ${idx+1}: Name cannot have numbers`);
@@ -122,25 +121,18 @@ function App() {
     return errors;
   };
 
-  const handleSettingsSubmit = (e) => {
-    e.preventDefault();
-    const entrepreneurs = Array.from({ length: settings.num_entrepreneurs }, () => ({
-      full_name: "", phone_whatsapp: "", business_name_type: "", sector: "", years_in_business: "", can_mentor: ""
-    }));
-    const professionals = Array.from({ length: settings.num_professionals }, () => ({
-      full_name: "", skill_profession: "", willing_to_train: ""
-    }));
-    setFormData(prev => ({ ...prev, entrepreneurs, professionals }));
-    setStep(2);
-  };
-
   const handleChange = (e, section, index, field) => {
     const val = e.target.value;
-    if (section) {
+    if (section === 'entrepreneur') {
+      setFormData(prev => ({
+        ...prev,
+        entrepreneur: { ...prev.entrepreneur, [field]: val }
+      }));
+    } else if (section === 'professionals') {
       setFormData(prev => {
-        const arr = [...prev[section]];
+        const arr = [...prev.professionals];
         arr[index] = { ...arr[index], [field]: val };
-        return { ...prev, [section]: arr };
+        return { ...prev, professionals: arr };
       });
     } else {
       setFormData(prev => ({ ...prev, [e.target.name]: val }));
@@ -191,15 +183,17 @@ function App() {
 
     setLoading(true);
     try {
-      const payload = { ...formData, ...settings };
+      const payload = formData;
       await axios.post(`${API_URL}/add-to-sheet/`, payload);
       setSubmitted(true);
       // Reset everything
-      setStep(1);
       setSelectedZone(""); setSelectedRegion(""); setSelectedDivision("");
       setFormData({
-        region_division_group_name: "", enterprise_coordinator_name: "", enterprise_coordinator_contact: "",
-        entrepreneurs: [], professionals: [], investment_opportunities: "", diaspora_name: "", diaspora_country: "", diaspora_skill_interest: ""
+        region_division_group_name: "",
+        enterprise_coordinator_name: "",
+        enterprise_coordinator_contact: "",
+        entrepreneur: { full_name: "", phone_whatsapp: "", business_name_type: "", sector: "", years_in_business: "", can_mentor: "" },
+        professionals: [ { full_name: "", skill_profession: "", willing_to_train: "" }, { full_name: "", skill_profession: "", willing_to_train: "" } ]
       });
     } catch (err) {
       setError("Submission failed: " + (err.response?.data?.detail || err.message));
@@ -218,7 +212,7 @@ function App() {
         boxShadow: '0 8px 32px rgba(26, 115, 232, 0.12)', padding: '1.5rem 1.2rem 2rem',
         border: '1px solid rgba(26, 115, 232, 0.08)', width: '100%', boxSizing: 'border-box'
       }}>
-        {/* ✅ HEADER: Logo always beside heading + FAINT ENTREPRENEURIAL BACKGROUND */}
+        {/* ✅ HEADER: Logo beside heading + background, SUBTITLE REMOVED */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -226,14 +220,13 @@ function App() {
           marginBottom: '2rem',
           borderBottom: '2px solid #eaf4ff', 
           padding: '1.2rem',
-          flexWrap: 'nowrap', // 🚫 NO WRAP — side-by-side on all screens
+          flexWrap: 'nowrap',
           minWidth: 0,
-          // ✅ Relevant entrepreneurial background: business growth / planning scene
           backgroundImage: 'url(https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundBlendMode: 'overlay',
-          backgroundColor: 'rgba(255, 255, 255, 0.82)', // Faint overlay for readability
+          backgroundColor: 'rgba(255, 255, 255, 0.82)',
           borderRadius: '12px'
         }}>
           <img 
@@ -264,16 +257,6 @@ function App() {
             }}>
               DCLM-Ghana Entrepreneurship Database
             </h1>
-            <h2 style={{ 
-              color: '#2c3e50', 
-              fontSize: 'clamp(0.85rem, 2.8vw, 1.15rem)', 
-              margin: '0.3rem 0 0', 
-              opacity: 0.85,
-              lineHeight: 1.2,
-              textShadow: '0 1px 2px rgba(255, 255, 255, 0.9)'
-            }}>
-              Let Africa Go - Member Skills & Business Mapping
-            </h2>
           </div>
         </div>
 
@@ -281,205 +264,157 @@ function App() {
         {error && <div style={{ background: '#ffebee', color: '#c62828', padding: '0.9rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', borderLeft: '4px solid #c62828', whiteSpace: 'pre-line' }}>❌ {error}</div>}
         {submitted && <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '0.9rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', borderLeft: '4px solid #2e7d32' }}>✅ Submitted successfully!</div>}
 
-        {/* STEP 1 */}
-        {step === 1 && (
-          <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff' }}>
-            <h3 style={{ color: '#1a73e8', marginTop: 0 }}>Step 1: Set Number of Entries</h3>
-            <form onSubmit={handleSettingsSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Entrepreneurs <span style={{color:'red'}}>*</span></label>
-                  <input type="number" min="1" max="10" value={settings.num_entrepreneurs} onChange={(e)=>setSettings(p=>({...p,num_entrepreneurs:+e.target.value}))} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc'}} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Professionals <span style={{color:'red'}}>*</span></label>
-                  <input type="number" min="1" max="10" value={settings.num_professionals} onChange={(e)=>setSettings(p=>({...p,num_professionals:+e.target.value}))} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc'}} />
-                </div>
+        {/* ✅ FORM STARTS DIRECTLY — NO STEP 1 */}
+        <form onSubmit={handleSubmit}>
+          {/* SECTION A: DROPDOWNS & COORDINATOR */}
+          <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
+            <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>A</span>
+              Region/Division Information
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
+              {/* Zone */}
+              <div>
+                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Zone <span style={{color:'red'}}>*</span></label>
+                <select value={selectedZone} onChange={handleZoneChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+                  <option value="">-- Select Zone --</option>
+                  {Object.keys(zone_region_divisions).map(z => <option key={z} value={z}>{z}</option>)}
+                </select>
               </div>
-              <button type="submit" style={{marginTop:'1.5rem',padding:'0.85rem 2rem',background:'linear-gradient(135deg,#1a73e8,#0d47a1)',color:'white',border:'none',borderRadius:'10px',fontWeight:600,cursor:'pointer'}}>Continue →</button>
-            </form>
+              {/* Region */}
+              <div>
+                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Region <span style={{color:'red'}}>*</span></label>
+                <select value={selectedRegion} onChange={handleRegionChange} required disabled={!selectedZone} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem', background: selectedZone ? 'white' : '#f5f5f5'}}>
+                  <option value="">-- Select Region --</option>
+                  {selectedZone && Object.keys(zone_region_divisions[selectedZone]).map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              {/* Division */}
+              <div>
+                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Division <span style={{color:'red'}}>*</span></label>
+                <select value={selectedDivision} onChange={handleDivisionChange} required disabled={!selectedRegion} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem', background: selectedRegion ? 'white' : '#f5f5f5'}}>
+                  <option value="">-- Select Division --</option>
+                  {selectedRegion && zone_region_divisions[selectedZone][selectedRegion].map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Read-only combined location */}
+            <div style={{margin:'1rem 0'}}>
+              <label style={{fontWeight:500,fontSize:'0.9rem'}}>Full Location</label>
+              <input type="text" name="region_division_group_name" value={formData.region_division_group_name} readOnly style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #e0e7ee',background:'#f8f9fa',marginTop:'0.3rem'}} />
+            </div>
+
+            {/* Coordinator Details */}
+            <div style={{margin:'1rem 0'}}>
+              <label style={{fontWeight:500,fontSize:'0.9rem'}}>Coordinator Name <span style={{color:'red'}}>*</span></label>
+              <input type="text" name="enterprise_coordinator_name" value={formData.enterprise_coordinator_name} onChange={handleChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+            </div>
+            <div style={{margin:'1rem 0'}}>
+              <label style={{fontWeight:500,fontSize:'0.9rem'}}>Coordinator Contact <small style={{color:'#78909c'}}>(10 digits)</small> <span style={{color:'red'}}>*</span></label>
+              <input type="tel" maxLength={10} name="enterprise_coordinator_contact" value={formData.enterprise_coordinator_contact} onChange={handleChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+            </div>
           </div>
-        )}
 
-        {/* STEP 2 */}
-        {step === 2 && (
-          <form onSubmit={handleSubmit}>
-            {/* SECTION A: DROPDOWNS */}
-            <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
-              <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>A</span>
-                Region/Division Information
-              </h3>
+          {/* SECTION B: SINGLE ENTREPRENEUR */}
+          <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
+            <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>B</span>
+              Entrepreneur Details
+            </h3>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
-                {/* Zone */}
+            <div style={{background:'white',padding:'1.2rem',borderRadius:'12px',border:'1px solid #e0e7ee',margin:'1.2rem 0'}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem',margin:'1rem 0'}}>
                 <div>
-                  <label style={{fontWeight:500,fontSize:'0.9rem'}}>Zone <span style={{color:'red'}}>*</span></label>
-                  <select value={selectedZone} onChange={handleZoneChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
-                    <option value="">-- Select Zone --</option>
-                    {Object.keys(zone_region_divisions).map(z => <option key={z} value={z}>{z}</option>)}
+                  <label style={{fontSize:'0.85rem'}}>Full Name <span style={{color:'red'}}>*</span></label>
+                  <input type="text" value={formData.entrepreneur.full_name} onChange={(e)=>handleChange(e,'entrepreneur',null,'full_name')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+                </div>
+                <div>
+                  <label style={{fontSize:'0.85rem'}}>Phone / WhatsApp <span style={{color:'red'}}>*</span></label>
+                  <input type="tel" maxLength={10} value={formData.entrepreneur.phone_whatsapp} onChange={(e)=>handleChange(e,'entrepreneur',null,'phone_whatsapp')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+                </div>
+              </div>
+              <div style={{margin:'1rem 0'}}>
+                <label style={{fontSize:'0.85rem'}}>Business Name & Type <span style={{color:'red'}}>*</span></label>
+                <input type="text" value={formData.entrepreneur.business_name_type} onChange={(e)=>handleChange(e,'entrepreneur',null,'business_name_type')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'0.8rem'}}>
+                <div>
+                  <label style={{fontSize:'0.85rem'}}>Sector <span style={{color:'red'}}>*</span></label>
+                  <select value={formData.entrepreneur.sector} onChange={(e)=>handleChange(e,'entrepreneur',null,'sector')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+                    <option value="">-- Select --</option>
+                    <option value="Agriculture">Agriculture</option>
+                    <option value="Tech/ICT">Tech/ICT</option>
+                    <option value="Trading/SME">Trading/SME</option>
+                    <option value="Education">Education</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Real Estate">Real Estate</option>
+                    <option value="Mining">Mining</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
-                {/* Region */}
                 <div>
-                  <label style={{fontWeight:500,fontSize:'0.9rem'}}>Region <span style={{color:'red'}}>*</span></label>
-                  <select value={selectedRegion} onChange={handleRegionChange} required disabled={!selectedZone} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem', background: selectedZone ? 'white' : '#f5f5f5'}}>
-                    <option value="">-- Select Region --</option>
-                    {selectedZone && Object.keys(zone_region_divisions[selectedZone]).map(r => <option key={r} value={r}>{r}</option>)}
+                  <label style={{fontSize:'0.85rem'}}>Years in Business <span style={{color:'red'}}>*</span></label>
+                  <select value={formData.entrepreneur.years_in_business} onChange={(e)=>handleChange(e,'entrepreneur',null,'years_in_business')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+                    <option value="">-- Select --</option>
+                    <option value="<1yr">&lt; 1 year</option>
+                    <option value="1-3yrs">1–3 years</option>
+                    <option value="3-5yrs">3–5 years</option>
+                    <option value="5+yrs">5+ years</option>
                   </select>
                 </div>
-                {/* Division */}
                 <div>
-                  <label style={{fontWeight:500,fontSize:'0.9rem'}}>Division <span style={{color:'red'}}>*</span></label>
-                  <select value={selectedDivision} onChange={handleDivisionChange} required disabled={!selectedRegion} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem', background: selectedRegion ? 'white' : '#f5f5f5'}}>
-                    <option value="">-- Select Division --</option>
-                    {selectedRegion && zone_region_divisions[selectedZone][selectedRegion].map(d => <option key={d} value={d}>{d}</option>)}
+                  <label style={{fontSize:'0.85rem'}}>Can Mentor? <span style={{color:'red'}}>*</span></label>
+                  <select value={formData.entrepreneur.can_mentor} onChange={(e)=>handleChange(e,'entrepreneur',null,'can_mentor')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+                    <option value="">-- Select --</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                   </select>
                 </div>
               </div>
-
-              {/* Read-only combined location */}
-              <div style={{margin:'1rem 0'}}>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Full Location</label>
-                <input type="text" name="region_division_group_name" value={formData.region_division_group_name} readOnly style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #e0e7ee',background:'#f8f9fa',marginTop:'0.3rem'}} />
-              </div>
-
-              {/* Coordinator Details */}
-              <div style={{margin:'1rem 0'}}>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Coordinator Name <span style={{color:'red'}}>*</span></label>
-                <input type="text" name="enterprise_coordinator_name" value={formData.enterprise_coordinator_name} onChange={handleChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-              </div>
-              <div style={{margin:'1rem 0'}}>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Coordinator Contact <small style={{color:'#78909c'}}>(10 digits)</small> <span style={{color:'red'}}>*</span></label>
-                <input type="tel" maxLength={10} name="enterprise_coordinator_contact" value={formData.enterprise_coordinator_contact} onChange={handleChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-              </div>
             </div>
+          </div>
 
-            {/* SECTION B: ENTREPRENEURS */}
-            <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
-              <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>B</span>
-                Entrepreneurs ({settings.num_entrepreneurs})
-              </h3>
+          {/* SECTION C: PROFESSIONALS (2 entries) */}
+          <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
+            <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>C</span>
+              Professionals
+            </h3>
 
-              {formData.entrepreneurs.map((ent, idx) => (
-                <div key={idx} style={{background:'white',padding:'1.2rem',borderRadius:'12px',border:'1px solid #e0e7ee',margin:'1.2rem 0'}}>
-                  <h4 style={{color:'#0d47a1',marginTop:0}}>Entrepreneur {idx+1}</h4>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem',margin:'1rem 0'}}>
-                    <div>
-                      <label style={{fontSize:'0.85rem'}}>Full Name <span style={{color:'red'}}>*</span></label>
-                      <input type="text" value={ent.full_name} onChange={(e)=>handleChange(e,'entrepreneurs',idx,'full_name')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-                    </div>
-                    <div>
-                      <label style={{fontSize:'0.85rem'}}>Phone <span style={{color:'red'}}>*</span></label>
-                      <input type="tel" maxLength={10} value={ent.phone_whatsapp} onChange={(e)=>handleChange(e,'entrepreneurs',idx,'phone_whatsapp')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-                    </div>
+            {formData.professionals.map((prof, idx) => (
+              <div key={idx} style={{background:'white',padding:'1.2rem',borderRadius:'12px',border:'1px solid #e0e7ee',margin:'1.2rem 0'}}>
+                <h4 style={{color:'#0d47a1',marginTop:0}}>Professional {idx+1}</h4>
+                <div style={{margin:'1rem 0'}}>
+                  <label style={{fontSize:'0.85rem'}}>Full Name <span style={{color:'red'}}>*</span></label>
+                  <input type="text" value={prof.full_name} onChange={(e)=>handleChange(e,'professionals',idx,'full_name')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem'}}>
+                  <div>
+                    <label style={{fontSize:'0.85rem'}}>Skill / Profession <span style={{color:'red'}}>*</span></label>
+                    <input type="text" value={prof.skill_profession} onChange={(e)=>handleChange(e,'professionals',idx,'skill_profession')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
                   </div>
-                  <div style={{margin:'1rem 0'}}>
-                    <label style={{fontSize:'0.85rem'}}>Business Name & Type <span style={{color:'red'}}>*</span></label>
-                    <input type="text" value={ent.business_name_type} onChange={(e)=>handleChange(e,'entrepreneurs',idx,'business_name_type')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'0.8rem'}}>
-                    <div>
-                      <label style={{fontSize:'0.85rem'}}>Sector <span style={{color:'red'}}>*</span></label>
-                      <select value={ent.sector} onChange={(e)=>handleChange(e,'entrepreneurs',idx,'sector')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
-                        <option value="">-- Select --</option>
-                        <option value="Agriculture">Agriculture</option>
-                        <option value="Tech/ICT">Tech/ICT</option>
-                        <option value="Trading/SME">Trading/SME</option>
-                        <option value="Education">Education</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Real Estate">Real Estate</option>
-                        <option value="Mining">Mining</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{fontSize:'0.85rem'}}>Years in Business <span style={{color:'red'}}>*</span></label>
-                      <select value={ent.years_in_business} onChange={(e)=>handleChange(e,'entrepreneurs',idx,'years_in_business')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
-                        <option value="">-- Select --</option>
-                        <option value="<1yr">&lt; 1 year</option>
-                        <option value="1-3yrs">1–3 years</option>
-                        <option value="3-5yrs">3–5 years</option>
-                        <option value="5+yrs">5+ years</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{fontSize:'0.85rem'}}>Can Mentor? <span style={{color:'red'}}>*</span></label>
-                      <select value={ent.can_mentor} onChange={(e)=>handleChange(e,'entrepreneurs',idx,'can_mentor')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
-                        <option value="">-- Select --</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label style={{fontSize:'0.85rem'}}>Willing to Train? <span style={{color:'red'}}>*</span></label>
+                    <select value={prof.willing_to_train} onChange={(e)=>handleChange(e,'professionals',idx,'willing_to_train')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+                      <option value="">-- Select --</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* SECTION C: PROFESSIONALS */}
-            <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
-              <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>C</span>
-                Professionals ({settings.num_professionals})
-              </h3>
-
-              {formData.professionals.map((prof, idx) => (
-                <div key={idx} style={{background:'white',padding:'1.2rem',borderRadius:'12px',border:'1px solid #e0e7ee',margin:'1.2rem 0'}}>
-                  <h4 style={{color:'#0d47a1',marginTop:0}}>Professional {idx+1}</h4>
-                  <div style={{margin:'1rem 0'}}>
-                    <label style={{fontSize:'0.85rem'}}>Full Name <span style={{color:'red'}}>*</span></label>
-                    <input type="text" value={prof.full_name} onChange={(e)=>handleChange(e,'professionals',idx,'full_name')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem'}}>
-                    <div>
-                      <label style={{fontSize:'0.85rem'}}>Skill / Profession <span style={{color:'red'}}>*</span></label>
-                      <input type="text" value={prof.skill_profession} onChange={(e)=>handleChange(e,'professionals',idx,'skill_profession')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-                    </div>
-                    <div>
-                      <label style={{fontSize:'0.85rem'}}>Willing to Train? <span style={{color:'red'}}>*</span></label>
-                      <select value={prof.willing_to_train} onChange={(e)=>handleChange(e,'professionals',idx,'willing_to_train')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
-                        <option value="">-- Select --</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* SECTION D & E + SUBMIT */}
-            <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
-              <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>D</span>
-                Investment & Diaspora Info
-              </h3>
-              <textarea name="investment_opportunities" value={formData.investment_opportunities} onChange={handleChange} rows={4} placeholder="Opportunities available..." style={{width:'100%',padding:'0.9rem',borderRadius:'10px',border:'1px solid #cfd8dc',margin:'1rem 0'}} />
-
-              <div style={{margin:'1rem 0'}}>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Diaspora Name</label>
-                <input type="text" name="diaspora_name" value={formData.diaspora_name} onChange={handleChange} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
               </div>
-              <div style={{margin:'1rem 0'}}>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Country</label>
-                <input type="text" name="diaspora_country" value={formData.diaspora_country} onChange={handleChange} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-              </div>
-              <div style={{margin:'1rem 0'}}>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Contribution / Skill</label>
-                <input type="text" name="diaspora_skill_interest" value={formData.diaspora_skill_interest} onChange={handleChange} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-              </div>
-            </div>
+            ))}
+          </div>
 
-            {/* BUTTONS */}
-            <div style={{display:'flex',gap:'1rem',flexWrap:'wrap'}}>
-              <button type="button" onClick={()=>setStep(1)} style={{padding:'0.9rem 1.5rem',background:'#eaf4ff',color:'#1a73e8',border:'none',borderRadius:'10px',fontWeight:600,flex:'1 1 120px'}}>← Back</button>
-              <button type="submit" disabled={loading} style={{padding:'0.9rem',background:loading?'#90caf9':'linear-gradient(135deg,#1a73e8,#0d47a1)',color:'white',border:'none',borderRadius:'10px',fontWeight:600,flex:'2 1 200px',cursor:loading?'not-allowed':'pointer'}}>
-                {loading ? "Processing..." : "✓ Submit Form"}
-              </button>
-            </div>
-          </form>
-        )}
+          {/* SUBMIT BUTTON ONLY — NO INVESTMENT/DIASPORA SECTION */}
+          <div style={{textAlign:'center'}}>
+            <button type="submit" disabled={loading} style={{padding:'0.9rem 3rem',background:loading?'#90caf9':'linear-gradient(135deg,#1a73e8,#0d47a1)',color:'white',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'1rem',cursor:loading?'not-allowed':'pointer'}}>
+              {loading ? "Processing..." : "✓ Submit Form"}
+            </button>
+          </div>
+        </form>
 
         <div style={{textAlign:'center',color:'#78909c',fontSize:'0.8rem',marginTop:'2rem',borderTop:'1px solid #eaf4ff',paddingTop:'1rem'}}>
           DCLM-Ghana • Entrepreneurship Database System
