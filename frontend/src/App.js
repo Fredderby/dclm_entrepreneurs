@@ -218,24 +218,48 @@ function App() {
         boxShadow: '0 8px 32px rgba(26, 115, 232, 0.12)', padding: '1.5rem 1.2rem 2rem',
         border: '1px solid rgba(26, 115, 232, 0.08)', width: '100%', boxSizing: 'border-box'
       }}>
-        {/* HEADER */}
+        {/* ✅ FIXED HEADER — Logo ALWAYS beside heading, never stacked */}
         <div style={{ 
-          display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem',
-          borderBottom: '2px solid #eaf4ff', paddingBottom: '1rem', flexWrap: 'wrap'
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '1rem', 
+          marginBottom: '2rem',
+          borderBottom: '2px solid #eaf4ff', 
+          paddingBottom: '1rem', 
+          flexWrap: 'nowrap', // 🚫 NO WRAP — stays side-by-side on all screens
+          minWidth: 0 // ✅ Prevents overflow issues
         }}>
           <img 
-            src="/dclmlogo.JPG" alt="Logo" 
-            style={{ height: 'clamp(50px, 12vw, 75px)', objectFit: 'contain' }}
+            src="/dclmlogo.JPG" 
+            alt="Logo" 
+            style={{ 
+              height: 'clamp(45px, 10vw, 75px)', 
+              width: 'auto',
+              objectFit: 'contain',
+              flexShrink: 0 // ✅ Don’t shrink logo
+            }}
             onError={(e) => {
               e.target.style.display = 'none';
-              e.target.insertAdjacentHTML('afterend', '<div style="font-weight:bold; font-size:clamp(1.1rem,4vw,1.4rem); color:#1a73e8; background:#eaf4ff; padding:0.5rem 0.7rem; border-radius:10px;">DCLM</div>');
+              e.target.insertAdjacentHTML('afterend', '<div style="font-weight:bold; font-size:clamp(1.1rem,4vw,1.4rem); color:#1a73e8; background:#eaf4ff; padding:0.5rem 0.7rem; border-radius:10px; flex-shrink:0;">DCLM</div>');
             }}
           />
-          <div>
-            <h1 style={{ color: '#1a73e8', fontSize: 'clamp(1.3rem, 4.5vw, 1.9rem)', margin: 0, fontWeight: 700 }}>
+          <div style={{ minWidth: 0 }}> {/* ✅ Allows text to wrap cleanly */}
+            <h1 style={{ 
+              color: '#1a73e8', 
+              fontSize: 'clamp(1.1rem, 3.5vw, 1.9rem)', 
+              margin: 0, 
+              fontWeight: 700,
+              lineHeight: 1.2
+            }}>
               DCLM-Ghana Entrepreneurship Database
             </h1>
-            <h2 style={{ color: '#2c3e50', fontSize: 'clamp(0.95rem, 3vw, 1.15rem)', margin: '0.3rem 0 0', opacity: 0.85 }}>
+            <h2 style={{ 
+              color: '#2c3e50', 
+              fontSize: 'clamp(0.85rem, 2.8vw, 1.15rem)', 
+              margin: '0.3rem 0 0', 
+              opacity: 0.85,
+              lineHeight: 1.2
+            }}>
               Let Africa Go - Member Skills & Business Mapping
             </h2>
           </div>
