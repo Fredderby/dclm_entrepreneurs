@@ -114,35 +114,25 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
         gc = gspread.authorize(creds)
         sheet = gc.open_by_key(SHEET_ID).sheet1
 
-        # Flatten dynamic arrays into numbered fields
+        # Build flat dict from frontend form data
+        ent = data.get("entrepreneur", {})
         flat = {
-            "num_entrepreneurs": str(data.get("num_entrepreneurs", 0)),
-            "num_professionals": str(data.get("num_professionals", 0)),
+            "num_entrepreneurs": "1",
+            "num_professionals": "0",
             "region_division_group_name": data.get("region_division_group_name", ""),
             "enterprise_coordinator_name": data.get("enterprise_coordinator_name", ""),
             "enterprise_coordinator_contact": data.get("enterprise_coordinator_contact", ""),
-            "investment_opportunities": data.get("investment_opportunities", ""),
-            "diaspora_name": data.get("diaspora_name", ""),
-            "diaspora_country": data.get("diaspora_country", ""),
-            "diaspora_skill_interest": data.get("diaspora_skill_interest", "")
+            "investment_opportunities": "",
+            "diaspora_name": "",
+            "diaspora_country": "",
+            "diaspora_skill_interest": "",
+            "entrepreneur_1_full_name": ent.get("full_name", ""),
+            "entrepreneur_1_phone_whatsapp": ent.get("phone_whatsapp", ""),
+            "entrepreneur_1_business_name_type": ent.get("business_name_type", ""),
+            "entrepreneur_1_sector": ent.get("sector", ""),
+            "entrepreneur_1_years_in_business": ent.get("years_in_business", ""),
+            "entrepreneur_1_can_mentor": ent.get("can_mentor", "")
         }
-
-        # Flatten entrepreneurs
-        ents = data.get("entrepreneurs", [])
-        for i, ent in enumerate(ents, 1):
-            flat[f"entrepreneur_{i}_full_name"] = ent.get("full_name", "")
-            flat[f"entrepreneur_{i}_phone_whatsapp"] = ent.get("phone_whatsapp", "")
-            flat[f"entrepreneur_{i}_business_name_type"] = ent.get("business_name_type", "")
-            flat[f"entrepreneur_{i}_sector"] = ent.get("sector", "")
-            flat[f"entrepreneur_{i}_years_in_business"] = ent.get("years_in_business", "")
-            flat[f"entrepreneur_{i}_can_mentor"] = ent.get("can_mentor", "")
-
-        # Flatten professionals
-        pros = data.get("professionals", [])
-        for i, pro in enumerate(pros, 1):
-            flat[f"professional_{i}_full_name"] = pro.get("full_name", "")
-            flat[f"professional_{i}_skill_profession"] = pro.get("skill_profession", "")
-            flat[f"professional_{i}_willing_to_train"] = pro.get("willing_to_train", "")
 
         # Write to sheet
         headers = sheet.row_values(1)
