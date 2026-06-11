@@ -13,10 +13,10 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "3001:80"
+      - "3001:3001"
+    environment:
+      - NGINX_PORT=3001
 
 networks:
   default:
     name: entrepreneur-dclm-a1spks_default
-    labels:
-      com.docker.compose.network: "default"
