@@ -218,16 +218,23 @@ function App() {
         boxShadow: '0 8px 32px rgba(26, 115, 232, 0.12)', padding: '1.5rem 1.2rem 2rem',
         border: '1px solid rgba(26, 115, 232, 0.08)', width: '100%', boxSizing: 'border-box'
       }}>
-        {/* ✅ FIXED HEADER — Logo ALWAYS beside heading, never stacked */}
+        {/* ✅ HEADER: Logo always beside heading + FAINT ENTREPRENEURIAL BACKGROUND */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
           gap: '1rem', 
           marginBottom: '2rem',
           borderBottom: '2px solid #eaf4ff', 
-          paddingBottom: '1rem', 
-          flexWrap: 'nowrap', // 🚫 NO WRAP — stays side-by-side on all screens
-          minWidth: 0 // ✅ Prevents overflow issues
+          padding: '1.2rem',
+          flexWrap: 'nowrap', // 🚫 NO WRAP — side-by-side on all screens
+          minWidth: 0,
+          // ✅ Relevant entrepreneurial background: business growth / planning scene
+          backgroundImage: 'url(https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'overlay',
+          backgroundColor: 'rgba(255, 255, 255, 0.82)', // Faint overlay for readability
+          borderRadius: '12px'
         }}>
           <img 
             src="/dclmlogo.JPG" 
@@ -236,20 +243,24 @@ function App() {
               height: 'clamp(45px, 10vw, 75px)', 
               width: 'auto',
               objectFit: 'contain',
-              flexShrink: 0 // ✅ Don’t shrink logo
+              flexShrink: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              padding: '0.3rem',
+              borderRadius: '8px'
             }}
             onError={(e) => {
               e.target.style.display = 'none';
-              e.target.insertAdjacentHTML('afterend', '<div style="font-weight:bold; font-size:clamp(1.1rem,4vw,1.4rem); color:#1a73e8; background:#eaf4ff; padding:0.5rem 0.7rem; border-radius:10px; flex-shrink:0;">DCLM</div>');
+              e.target.insertAdjacentHTML('afterend', '<div style="font-weight:bold; font-size:clamp(1.1rem,4vw,1.4rem); color:#1a73e8; background:rgba(255,255,255,0.9); padding:0.5rem 0.7rem; border-radius:10px; flex-shrink:0;">DCLM</div>');
             }}
           />
-          <div style={{ minWidth: 0 }}> {/* ✅ Allows text to wrap cleanly */}
+          <div style={{ minWidth: 0 }}>
             <h1 style={{ 
               color: '#1a73e8', 
               fontSize: 'clamp(1.1rem, 3.5vw, 1.9rem)', 
               margin: 0, 
               fontWeight: 700,
-              lineHeight: 1.2
+              lineHeight: 1.2,
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.9)'
             }}>
               DCLM-Ghana Entrepreneurship Database
             </h1>
@@ -258,7 +269,8 @@ function App() {
               fontSize: 'clamp(0.85rem, 2.8vw, 1.15rem)', 
               margin: '0.3rem 0 0', 
               opacity: 0.85,
-              lineHeight: 1.2
+              lineHeight: 1.2,
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.9)'
             }}>
               Let Africa Go - Member Skills & Business Mapping
             </h2>
