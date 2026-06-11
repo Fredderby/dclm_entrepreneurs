@@ -4,24 +4,24 @@ sys.path.append(".")
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, get_db
-# ✅ CORRECT IMPORT: import the FUNCTION, not the module
 from models import create_dynamic_model
 import uuid
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 
-# ✅ FIX: Call the function correctly — NO MORE "Module is not callable" ERROR
-SheetData = create_dynamic_model()
+# Import Google Sheets save function
+from google_sheets import save_to_google_sheet
 
-# Create all tables
+# Create DB model
+SheetData = create_dynamic_model()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="DCLM Entrepreneurship Database API",
+    title="DCLM API",
     version="1.0.0"
 )
 
-# CORS setup
+# ✅ CORS fixed — allows frontend to connect
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,7 +30,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Save endpoint
+# ✅ Health check endpoint
+@app.get("/")
+def root():
+    return {"status": "API is running", "timestamp": datetime.utcnow().isoformat()}
+
+# ✅ Main save endpoint — saves to DB + Google Sheets
 @app.post("/add-to-sheet/")
 def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
@@ -45,7 +50,6 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             "enterprise_coordinator_contact": data.get("enterprise_coordinator_contact")
         }
 
-        # Unpack entrepreneur object
         entrepreneur = data.get("entrepreneur", {})
         entry_data.update({
             "entrepreneur_full_name": entrepreneur.get("full_name"),
@@ -56,13 +60,24 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             "entrepreneur_can_mentor": entrepreneur.get("can_mentor")
         })
 
-        # Save
+        # 1. Save to Database
         new_entry = SheetData(**entry_data)
         db.add(new_entry)
         db.commit()
         db.refresh(new_entry)
 
-        return {"status": "success", "id": new_entry.id}
+        # 2. Save to Google Sheets
+        sheet_status = "success"
+        try:
+            save_to_google_sheet(entry_data)
+        except Exception as e:
+            sheet_status = f"warning: sheet failed - {str(e)}"
+
+        return {
+            "status": "success",
+            "db_id": new_entry.id,
+            "google_sheets": sheet_status
+        }
 
     except Exception as e:
         db.rollback()
