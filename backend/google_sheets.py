@@ -1,97 +1,82 @@
-import os
-from dotenv import load_dotenv
+from typing import Dict, Any
 from google.oauth2.service_account import Credentials
 import gspread
-import google.auth.transport.requests
-import time
+from google.auth.transport.requests import Request
+from config import settings
 
-load_dotenv()
-
-# Required Google API scopes
+# Google API access scopes
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file"
+    "https://www.googleapis.com/auth/drive"
 ]
 
-def save_to_google_sheet(data_dict: dict):
-    """Save a single row of data to Google Sheet — with full error handling."""
-    SERVICE_ACCOUNT_EMAIL = os.getenv("CLIENT_EMAIL", "").strip()
-    PRIVATE_KEY = os.getenv("PRIVATE_KEY", "").strip()
-    SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1fzbttlAvu0aMAHDpx3XyZ9VMy4VrV1rS-gxBx5C814A").strip()
+# Column order — MUST match your Google Sheet header row exactly
+HEADERS = [
+    "row_id", "synced_at", "region_division_group_name",
+    "enterprise_coordinator_name", "enterprise_coordinator_contact",
+    "entrepreneur_full_name", "entrepreneur_phone_whatsapp",
+    "entrepreneur_business_name_type", "entrepreneur_sector",
+    "entrepreneur_years_in_business", "entrepreneur_can_mentor"
+]
 
-    # ✅ Validate credentials exist
-    if not SERVICE_ACCOUNT_EMAIL:
-        raise ValueError("❌ Missing CLIENT_EMAIL in .env file")
-    if not PRIVATE_KEY:
-        raise ValueError("❌ Missing PRIVATE_KEY in .env file")
-    if not SHEET_ID or len(SHEET_ID) < 40:
-        raise ValueError("❌ Invalid or missing GOOGLE_SHEET_ID")
+class GoogleSheetsService:
+    def __init__(self):
+        self.client: gspread.Client | None = None
+        self.spreadsheet: gspread.Spreadsheet | None = None
+        self.submissions_sheet: gspread.Worksheet | None = None
+        self._initialize_client()
 
-    # ✅ Clean private key perfectly — fixes formatting issues
-    private_key = (
-        PRIVATE_KEY
-        .replace('"', '')
-        .replace("'", "")
-        .replace("\\n", "\n")
-        .replace("\\\\n", "\n")
-        .replace("\\ ", " ")
-        .strip()
-    )
+    def _initialize_client(self) -> None:
+        try:
+            creds = Credentials.from_service_account_info(
+                settings.google_credentials,
+                scopes=SCOPES
+            )
+            req = Request()
+            creds.refresh(req)
 
-    try:
-        # ✅ Create credentials
-        creds = Credentials.from_service_account_info(
-            {
-                "type": "service_account",
-                "client_email": SERVICE_ACCOUNT_EMAIL,
-                "private_key": private_key,
-                "token_uri": "https://oauth2.googleapis.com/token",
-            },
-            scopes=SCOPES,
-        )
+            self.client = gspread.authorize(creds)
+            self.spreadsheet = self.client.open_by_key(settings.SPREADSHEET_ID)
+            self._init_sheet()
+            print("✅ Connected to Google Sheets successfully")
+        except Exception as e:
+            print(f"❌ Google Sheets connection failed: {e}")
+            raise
 
-        # ✅ Refresh token with timeout & retry
-        request = google.auth.transport.requests.Request()
-        for attempt in range(3):  # Retry up to 3 times
-            try:
-                creds.refresh(request)
-                break
-            except Exception as e:
-                if attempt == 2:
-                    raise Exception(f"❌ Failed to get Google token after 3 tries: {str(e)}")
-                time.sleep(1)  # Wait before retry
+    def _init_sheet(self) -> None:
+        # Safe check: only run if spreadsheet is connected
+        if not self.spreadsheet:
+            raise RuntimeError("Spreadsheet not connected")
 
-        # ✅ Authorize and open sheet
-        gc = gspread.authorize(creds)
-        sheet = gc.open_by_key(SHEET_ID).sheet1
+        try:
+            self.submissions_sheet = self.spreadsheet.worksheet(settings.SUBMISSIONS_SHEET)
+        except gspread.WorksheetNotFound:
+            self.submissions_sheet = self.spreadsheet.add_worksheet(
+                title=settings.SUBMISSIONS_SHEET, rows=1000, cols=len(HEADERS)
+            )
 
-        # ✅ Exact column order — matches your database
+        # Add headers if empty
+        if self.submissions_sheet and not self.submissions_sheet.get_all_values():
+            self.submissions_sheet.append_row(HEADERS)
+
+    def add_row(self, data: Dict[str, Any]) -> None:
+        if not self.submissions_sheet:
+            raise RuntimeError("Sheet not ready — cannot add row")
+
         row = [
-            data_dict.get("row_id", ""),
-            data_dict.get("synced_at", ""),
-            data_dict.get("region_division_group_name", ""),
-            data_dict.get("enterprise_coordinator_name", ""),
-            data_dict.get("enterprise_coordinator_contact", ""),
-            data_dict.get("entrepreneur_full_name", ""),
-            data_dict.get("entrepreneur_phone_whatsapp", ""),
-            data_dict.get("entrepreneur_business_name_type", ""),
-            data_dict.get("entrepreneur_sector", ""),
-            data_dict.get("entrepreneur_years_in_business", ""),
-            data_dict.get("entrepreneur_can_mentor", "")
+            data.get("row_id", ""),
+            data.get("synced_at", ""),
+            data.get("region_division_group_name", ""),
+            data.get("enterprise_coordinator_name", ""),
+            data.get("enterprise_coordinator_contact", ""),
+            data.get("entrepreneur_full_name", ""),
+            data.get("entrepreneur_phone_whatsapp", ""),
+            data.get("entrepreneur_business_name_type", ""),
+            data.get("entrepreneur_sector", ""),
+            data.get("entrepreneur_years_in_business", ""),
+            data.get("entrepreneur_can_mentor", "")
         ]
+        self.submissions_sheet.append_row(row, value_input_option="RAW")
 
-        # ✅ Append row
-        sheet.append_row(row, value_input_option="RAW")
-        print("✅ Data saved to Google Sheet successfully")
-        return True
-
-    except gspread.exceptions.APIError as e:
-        if "PERMISSION_DENIED" in str(e) or "insufficient permissions" in str(e):
-            raise Exception("❌ Permission denied: Share your Google Sheet with " + SERVICE_ACCOUNT_EMAIL)
-        elif "not found" in str(e) or "404" in str(e):
-            raise Exception("❌ Sheet not found: Check GOOGLE_SHEET_ID is correct")
-        else:
-            raise Exception(f"❌ Google API Error: {str(e)}")
-
-    except Exception as e:
-        raise Exception(f"❌ Google Sheets save failed: {str(e)}")
+# Create service instance
+sheets_service = GoogleSheetsService()

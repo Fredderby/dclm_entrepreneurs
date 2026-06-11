@@ -1,27 +1,17 @@
 import sys
 sys.path.append(".")
 
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from database import engine, Base, get_db
-from models import create_dynamic_model
+from fastapi import FastAPI, HTTPException
 import uuid
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
-
-# Import Google Sheets save function
-from google_sheets import save_to_google_sheet
-
-# Create DB model
-SheetData = create_dynamic_model()
-Base.metadata.create_all(bind=engine)
+from google_sheets import sheets_service
 
 app = FastAPI(
     title="DCLM API",
     version="1.0.0"
 )
 
-# ✅ CORS fixed — allows frontend to connect
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,14 +20,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Health check endpoint
 @app.get("/")
 def root():
     return {"status": "API is running", "timestamp": datetime.utcnow().isoformat()}
 
-# ✅ Main save endpoint — saves to DB + Google Sheets
 @app.post("/add-to-sheet/")
-def add_to_sheet(data: dict, db: Session = Depends(get_db)):
+def add_to_sheet(data: dict):
     try:
         row_id = str(uuid.uuid4())
         synced_at = datetime.utcnow().isoformat()
@@ -60,25 +48,13 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             "entrepreneur_can_mentor": entrepreneur.get("can_mentor")
         })
 
-        # 1. Save to Database
-        new_entry = SheetData(**entry_data)
-        db.add(new_entry)
-        db.commit()
-        db.refresh(new_entry)
-
-        # 2. Save to Google Sheets
-        sheet_status = "success"
-        try:
-            save_to_google_sheet(entry_data)
-        except Exception as e:
-            sheet_status = f"warning: sheet failed - {str(e)}"
+        sheets_service.add_row(entry_data)
 
         return {
             "status": "success",
-            "db_id": new_entry.id,
-            "google_sheets": sheet_status
+            "row_id": row_id,
+            "google_sheets": "saved successfully"
         }
 
     except Exception as e:
-        db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
