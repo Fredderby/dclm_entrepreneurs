@@ -2,20 +2,22 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-# Load environment variables
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 class Settings:
     PROJECT_ID = os.getenv("PROJECT_ID")
     PRIVATE_KEY_ID = os.getenv("PRIVATE_KEY_ID")
-    PRIVATE_KEY = os.getenv("PRIVATE_KEY", "").replace("\\n", "\n").strip()
+    
+    # ✅ STRONG CLEANING — fixes all formatting issues
+    PRIVATE_KEY = os.getenv("PRIVATE_KEY", "")
+    PRIVATE_KEY = PRIVATE_KEY.replace("'", "").replace('"', '').replace("\\ ", " ")
+    PRIVATE_KEY = PRIVATE_KEY.replace("\\n", "\n").replace("\\\\n", "\n").strip()
+    
     CLIENT_EMAIL = os.getenv("CLIENT_EMAIL")
     CLIENT_ID = os.getenv("CLIENT_ID")
     CLIENT_X509_CERT_URL = os.getenv("CLIENT_X509_CERT_URL")
     SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
-
-    # Sheet name where data will be saved
     SUBMISSIONS_SHEET = "Submissions"
 
     @property

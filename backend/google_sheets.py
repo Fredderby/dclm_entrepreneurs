@@ -4,13 +4,11 @@ import gspread
 from google.auth.transport.requests import Request
 from config import settings
 
-# Google API access scopes
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-# Column order — MUST match your Google Sheet header row exactly
 HEADERS = [
     "row_id", "synced_at", "region_division_group_name",
     "enterprise_coordinator_name", "enterprise_coordinator_contact",
@@ -28,6 +26,9 @@ class GoogleSheetsService:
 
     def _initialize_client(self) -> None:
         try:
+            # ✅ Debug print — check if key is loaded
+            print("🔑 Private key starts with:", settings.PRIVATE_KEY[:50] + "...")
+
             creds = Credentials.from_service_account_info(
                 settings.google_credentials,
                 scopes=SCOPES
@@ -39,12 +40,12 @@ class GoogleSheetsService:
             self.spreadsheet = self.client.open_by_key(settings.SPREADSHEET_ID)
             self._init_sheet()
             print("✅ Connected to Google Sheets successfully")
+
         except Exception as e:
             print(f"❌ Google Sheets connection failed: {e}")
             raise
 
     def _init_sheet(self) -> None:
-        # Safe check: only run if spreadsheet is connected
         if not self.spreadsheet:
             raise RuntimeError("Spreadsheet not connected")
 
@@ -55,7 +56,6 @@ class GoogleSheetsService:
                 title=settings.SUBMISSIONS_SHEET, rows=1000, cols=len(HEADERS)
             )
 
-        # Add headers if empty
         if self.submissions_sheet and not self.submissions_sheet.get_all_values():
             self.submissions_sheet.append_row(HEADERS)
 
@@ -78,5 +78,4 @@ class GoogleSheetsService:
         ]
         self.submissions_sheet.append_row(row, value_input_option="RAW")
 
-# Create service instance
 sheets_service = GoogleSheetsService()
