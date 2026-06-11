@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8080";
+// ✅ Correct API URL — matches backend port & prefix
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:9000/api";
 
 const zone_region_divisions = {
     "Central Western Zone": {
@@ -54,14 +55,12 @@ function App() {
     region_division_group_name: "",
     enterprise_coordinator_name: "",
     enterprise_coordinator_contact: "",
-    entrepreneur: {
-      full_name: "",
-      phone_whatsapp: "",
-      business_name_type: "",
-      sector: "",
-      years_in_business: "",
-      can_mentor: ""
-    }
+    entrepreneur_full_name: "",
+    entrepreneur_phone_whatsapp: "",
+    entrepreneur_business_name_type: "",
+    entrepreneur_sector: "",
+    entrepreneur_years_in_business: "",
+    entrepreneur_can_mentor: ""
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -83,33 +82,25 @@ function App() {
     if (!formData.enterprise_coordinator_contact.trim()) errors.push("• Coordinator Contact is required");
     else if (!isValidPhone(formData.enterprise_coordinator_contact)) errors.push("• Coordinator Contact must be exactly 10 digits");
 
-    const ent = formData.entrepreneur;
-    if (!ent.full_name.trim()) errors.push("• Entrepreneur: Full Name required");
-    else if (hasNumbers(ent.full_name)) errors.push("• Entrepreneur: Name cannot have numbers");
+    if (!formData.entrepreneur_full_name.trim()) errors.push("• Entrepreneur: Full Name required");
+    else if (hasNumbers(formData.entrepreneur_full_name)) errors.push("• Entrepreneur: Name cannot have numbers");
 
-    if (!ent.phone_whatsapp.trim()) errors.push("• Entrepreneur: Phone required");
-    else if (!isValidPhone(ent.phone_whatsapp)) errors.push("• Entrepreneur: Phone must be 10 digits");
+    if (!formData.entrepreneur_phone_whatsapp.trim()) errors.push("• Entrepreneur: Phone required");
+    else if (!isValidPhone(formData.entrepreneur_phone_whatsapp)) errors.push("• Entrepreneur: Phone must be 10 digits");
 
-    if (!ent.business_name_type.trim()) errors.push("• Entrepreneur: Business Name required");
-    else if (hasNumbers(ent.business_name_type)) errors.push("• Entrepreneur: Business Name cannot have numbers");
+    if (!formData.entrepreneur_business_name_type.trim()) errors.push("• Entrepreneur: Business Name required");
+    else if (hasNumbers(formData.entrepreneur_business_name_type)) errors.push("• Entrepreneur: Business Name cannot have numbers");
 
-    if (!ent.sector) errors.push("• Entrepreneur: Select Business Sector");
-    if (!ent.years_in_business) errors.push("• Entrepreneur: Select Years in Business");
-    if (!ent.can_mentor) errors.push("• Entrepreneur: Select Mentorship option");
+    if (!formData.entrepreneur_sector) errors.push("• Entrepreneur: Select Business Sector");
+    if (!formData.entrepreneur_years_in_business) errors.push("• Entrepreneur: Select Years in Business");
+    if (!formData.entrepreneur_can_mentor) errors.push("• Entrepreneur: Select Mentorship option");
 
     return errors;
   };
 
-  const handleChange = (e, section, index, field) => {
+  const handleChange = (e) => {
     const val = e.target.value;
-    if (section === 'entrepreneur') {
-      setFormData(prev => ({
-        ...prev,
-        entrepreneur: { ...prev.entrepreneur, [field]: val }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [e.target.name]: val }));
-    }
+    setFormData(prev => ({ ...prev, [e.target.name]: val }));
     setError(null);
   };
 
@@ -152,14 +143,20 @@ function App() {
     if (!window.confirm("⚠️ Double-check all details before final submission.\n\nDo you want to submit now?")) return;
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/add-to-sheet/`, formData);
+      // ✅ Send data exactly matching MySQL schema
+      await axios.post(`${API_URL}/add-to-db/`, formData);
       setSubmitted(true);
       setSelectedZone(""); setSelectedRegion(""); setSelectedDivision("");
       setFormData({
         region_division_group_name: "",
         enterprise_coordinator_name: "",
         enterprise_coordinator_contact: "",
-        entrepreneur: { full_name: "", phone_whatsapp: "", business_name_type: "", sector: "", years_in_business: "", can_mentor: "" }
+        entrepreneur_full_name: "",
+        entrepreneur_phone_whatsapp: "",
+        entrepreneur_business_name_type: "",
+        entrepreneur_sector: "",
+        entrepreneur_years_in_business: "",
+        entrepreneur_can_mentor: ""
       });
     } catch (err) {
       setError("Submission failed: " + (err.response?.data?.detail || err.message));
@@ -366,17 +363,17 @@ function App() {
               }}>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
                   <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Full Name <span style={{color:'red'}}>*</span></label>
-                  <input type="text" value={formData.entrepreneur.full_name} onChange={(e)=>handleChange(e,'entrepreneur',null,'full_name')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
+                  <input type="text" name="entrepreneur_full_name" value={formData.entrepreneur_full_name} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
                 </div>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
                   <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Phone / WhatsApp <span style={{color:'red'}}>*</span></label>
-                  <input type="tel" maxLength={10} value={formData.entrepreneur.phone_whatsapp} onChange={(e)=>handleChange(e,'entrepreneur',null,'phone_whatsapp')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
+                  <input type="tel" maxLength={10} name="entrepreneur_phone_whatsapp" value={formData.entrepreneur_phone_whatsapp} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
                 </div>
               </div>
 
               <div style={{marginBottom:'1.5rem', width: '100%', boxSizing: 'border-box'}}>
                 <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Business Name & Type <span style={{color:'red'}}>*</span></label>
-                <input type="text" value={formData.entrepreneur.business_name_type} onChange={(e)=>handleChange(e,'entrepreneur',null,'business_name_type')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
+                <input type="text" name="entrepreneur_business_name_type" value={formData.entrepreneur_business_name_type} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
               </div>
 
               <div style={{
@@ -388,7 +385,7 @@ function App() {
               }}>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
                   <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Sector <span style={{color:'red'}}>*</span></label>
-                  <select value={formData.entrepreneur.sector} onChange={(e)=>handleChange(e,'entrepreneur',null,'sector')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
+                  <select name="entrepreneur_sector" value={formData.entrepreneur_sector} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
                     <option value="">-- Select --</option>
                     <option value="Agriculture">Agriculture</option>
                     <option value="Tech/ICT">Tech/ICT</option>
@@ -402,7 +399,7 @@ function App() {
                 </div>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
                   <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Years in Business <span style={{color:'red'}}>*</span></label>
-                  <select value={formData.entrepreneur.years_in_business} onChange={(e)=>handleChange(e,'entrepreneur',null,'years_in_business')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
+                  <select name="entrepreneur_years_in_business" value={formData.entrepreneur_years_in_business} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
                     <option value="">-- Select --</option>
                     <option value="<1yr">&lt; 1 year</option>
                     <option value="1-3yrs">1–3 years</option>
@@ -412,7 +409,7 @@ function App() {
                 </div>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
                   <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Can Mentor? <span style={{color:'red'}}>*</span></label>
-                  <select value={formData.entrepreneur.can_mentor} onChange={(e)=>handleChange(e,'entrepreneur',null,'can_mentor')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
+                  <select name="entrepreneur_can_mentor" value={formData.entrepreneur_can_mentor} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
                     <option value="">-- Select --</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>

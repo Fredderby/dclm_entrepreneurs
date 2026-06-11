@@ -1,22 +1,33 @@
+version: '3.8'
+
 services:
   dclm-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: ./backend   # ← uses Dockerfile inside backend/
+    container_name: dclm-backend
     restart: always
     ports:
       - "9000:8000"
+    environment:
+      - DB_HOST=mysql-202931-0.cloudclusters.net
+      - DB_PORT=19944
+      - DB_USER=admin
+      - DB_PASSWORD=7L8LDRQa
+      - DB_NAME=entrepreneur
+    networks:
+      - dclm-net
 
   dclm-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    build: ./frontend  # ← uses Dockerfile inside frontend/
+    container_name: dclm-frontend
     restart: always
     ports:
       - "3001:3001"
-    environment:
-      - NGINX_PORT=3001
+    depends_on:
+      - dclm-backend
+    networks:
+      - dclm-net
 
 networks:
-  default:
+  dclm-net:
     name: entrepreneur-dclm-a1spks_default
+    external: true
