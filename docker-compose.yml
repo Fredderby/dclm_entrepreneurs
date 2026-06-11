@@ -14,3 +14,7 @@ services:
     restart: always
     ports:
       - "3001:80"
+
+networks:
+  default:
+    name: entrepreneur-dclm-a1spks_default
