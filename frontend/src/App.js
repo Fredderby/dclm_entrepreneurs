@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8080";
 
-// ✅ YOUR EXACT ZONE-REGION-DIVISION DATA
 const zone_region_divisions = {
     "Central Western Zone": {
         "Tarkwa": ["Tarkwa div", "Enchi", "Asankragua"],
@@ -69,14 +68,11 @@ function App() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ VALIDATION HELPERS
   const hasNumbers = (text) => /\d/.test(text);
   const isValidPhone = (phone) => /^\d{10}$/.test(phone);
 
-  // ✅ FULL FORM VALIDATION
   const validateForm = () => {
     let errors = [];
-
     if (!selectedZone) errors.push("• Zone is required");
     if (!selectedRegion) errors.push("• Region is required");
     if (!selectedDivision) errors.push("• Division is required");
@@ -117,7 +113,6 @@ function App() {
     setError(null);
   };
 
-  // ✅ DEPENDENT DROPDOWN LOGIC
   const handleZoneChange = (e) => {
     const zone = e.target.value;
     setSelectedZone(zone);
@@ -150,20 +145,15 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
-
     if (validationErrors.length > 0) {
       setError("Please fix these issues:\n" + validationErrors.join("\n"));
       return;
     }
-
     if (!window.confirm("⚠️ Double-check all details before final submission.\n\nDo you want to submit now?")) return;
-
     setLoading(true);
     try {
-      const payload = formData;
-      await axios.post(`${API_URL}/add-to-sheet/`, payload);
+      await axios.post(`${API_URL}/add-to-sheet/`, formData);
       setSubmitted(true);
-      // Reset everything
       setSelectedZone(""); setSelectedRegion(""); setSelectedDivision("");
       setFormData({
         region_division_group_name: "",
@@ -197,7 +187,6 @@ function App() {
         width: '100%', 
         boxSizing: 'border-box'
       }}>
-        {/* ✅ HEADER: Logo beside heading + background, SUBTITLE REMOVED */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -245,13 +234,10 @@ function App() {
           </div>
         </div>
 
-        {/* MESSAGES */}
         {error && <div style={{ background: '#ffebee', color: '#c62828', padding: '1rem 1.2rem', borderRadius: '12px', marginBottom: '2rem', borderLeft: '4px solid #c62828', whiteSpace: 'pre-line', lineHeight: '1.5' }}>❌ {error}</div>}
         {submitted && <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '1rem 1.2rem', borderRadius: '12px', marginBottom: '2rem', borderLeft: '4px solid #2e7d32' }}>✅ Submitted successfully!</div>}
 
-        {/* ✅ FORM STARTS DIRECTLY — NO STEP 1, NO PROFESSIONALS, NO INVESTMENT/DIASPORA */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {/* SECTION A: DROPDOWNS & COORDINATOR */}
           <div style={{ 
             background: '#f8fbff', 
             padding: '1.8rem 1.5rem', 
@@ -292,163 +278,44 @@ function App() {
               width: '100%',
               boxSizing: 'border-box'
             }}>
-              {/* Zone */}
               <div style={{ width: '100%' }}>
-                <label style={{
-                  fontWeight: 500,
-                  fontSize: '0.95rem',
-                  display: 'block',
-                  marginBottom: '0.5rem'
-                }}>Zone <span style={{color:'red'}}>*</span></label>
-                <select 
-                  value={selectedZone} 
-                  onChange={handleZoneChange} 
-                  required 
-                  style={{
-                    width: '100%',
-                    padding: '0.9rem 1rem',
-                    borderRadius: '10px',
-                    border: '1px solid #cfd8dc',
-                    fontSize: '0.95rem',
-                    boxSizing: 'border-box'
-                  }}
-                >
+                <label style={{ fontWeight: 500, fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>Zone <span style={{color:'red'}}>*</span></label>
+                <select value={selectedZone} onChange={handleZoneChange} required style={{width: '100%', padding: '0.9rem 1rem', borderRadius: '10px', border: '1px solid #cfd8dc', fontSize: '0.95rem', boxSizing: 'border-box'}}>
                   <option value="">-- Select Zone --</option>
                   {Object.keys(zone_region_divisions).map(z => <option key={z} value={z}>{z}</option>)}
                 </select>
               </div>
-              {/* Region */}
               <div style={{ width: '100%' }}>
-                <label style={{
-                  fontWeight: 500,
-                  fontSize: '0.95rem',
-                  display: 'block',
-                  marginBottom: '0.5rem'
-                }}>Region <span style={{color:'red'}}>*</span></label>
-                <select 
-                  value={selectedRegion} 
-                  onChange={handleRegionChange} 
-                  required 
-                  disabled={!selectedZone} 
-                  style={{
-                    width: '100%',
-                    padding: '0.9rem 1rem',
-                    borderRadius: '10px',
-                    border: '1px solid #cfd8dc',
-                    fontSize: '0.95rem',
-                    boxSizing: 'border-box',
-                    backgroundColor: selectedZone ? 'white' : '#f5f5f5'
-                  }}
-                >
+                <label style={{ fontWeight: 500, fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>Region <span style={{color:'red'}}>*</span></label>
+                <select value={selectedRegion} onChange={handleRegionChange} required disabled={!selectedZone} style={{width: '100%', padding: '0.9rem 1rem', borderRadius: '10px', border: '1px solid #cfd8dc', fontSize: '0.95rem', boxSizing: 'border-box', backgroundColor: selectedZone ? 'white' : '#f5f5f5'}}>
                   <option value="">-- Select Region --</option>
                   {selectedZone && Object.keys(zone_region_divisions[selectedZone]).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
-              {/* Division */}
               <div style={{ width: '100%' }}>
-                <label style={{
-                  fontWeight: 500,
-                  fontSize: '0.95rem',
-                  display: 'block',
-                  marginBottom: '0.5rem'
-                }}>Division <span style={{color:'red'}}>*</span></label>
-                <select 
-                  value={selectedDivision} 
-                  onChange={handleDivisionChange} 
-                  required 
-                  disabled={!selectedRegion} 
-                  style={{
-                    width: '100%',
-                    padding: '0.9rem 1rem',
-                    borderRadius: '10px',
-                    border: '1px solid #cfd8dc',
-                    fontSize: '0.95rem',
-                    boxSizing: 'border-box',
-                    backgroundColor: selectedRegion ? 'white' : '#f5f5f5'
-                  }}
-                >
+                <label style={{ fontWeight: 500, fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>Division <span style={{color:'red'}}>*</span></label>
+                <select value={selectedDivision} onChange={handleDivisionChange} required disabled={!selectedRegion} style={{width: '100%', padding: '0.9rem 1rem', borderRadius: '10px', border: '1px solid #cfd8dc', fontSize: '0.95rem', boxSizing: 'border-box', backgroundColor: selectedRegion ? 'white' : '#f5f5f5'}}>
                   <option value="">-- Select Division --</option>
                   {selectedRegion && zone_region_divisions[selectedZone][selectedRegion].map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>
 
-            {/* Read-only combined location */}
             <div style={{marginBottom: '1.5rem', width: '100%', boxSizing: 'border-box'}}>
-              <label style={{
-                fontWeight: 500,
-                fontSize: '0.95rem',
-                display: 'block',
-                marginBottom: '0.5rem'
-              }}>Full Location</label>
-              <input 
-                type="text" 
-                name="region_division_group_name" 
-                value={formData.region_division_group_name} 
-                readOnly 
-                style={{
-                  width: '100%',
-                  padding: '0.9rem 1rem',
-                  borderRadius: '10px',
-                  border: '1px solid #e0e7ee',
-                  backgroundColor: '#f8f9fa',
-                  fontSize: '0.95rem',
-                  boxSizing: 'border-box'
-                }}
-              />
+              <label style={{ fontWeight: 500, fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>Full Location</label>
+              <input type="text" name="region_division_group_name" value={formData.region_division_group_name} readOnly style={{width: '100%', padding: '0.9rem 1rem', borderRadius: '10px', border: '1px solid #e0e7ee', backgroundColor: '#f8f9fa', fontSize: '0.95rem', boxSizing: 'border-box'}} />
             </div>
 
-            {/* Coordinator Details */}
             <div style={{marginBottom: '1.2rem', width: '100%', boxSizing: 'border-box'}}>
-              <label style={{
-                fontWeight: 500,
-                fontSize: '0.95rem',
-                display: 'block',
-                marginBottom: '0.5rem'
-              }}>Coordinator Name <span style={{color:'red'}}>*</span></label>
-              <input 
-                type="text" 
-                name="enterprise_coordinator_name" 
-                value={formData.enterprise_coordinator_name} 
-                onChange={handleChange} 
-                required 
-                style={{
-                  width: '100%',
-                  padding: '0.9rem 1rem',
-                  borderRadius: '10px',
-                  border: '1px solid #cfd8dc',
-                  fontSize: '0.95rem',
-                  boxSizing: 'border-box'
-                }}
-              />
+              <label style={{ fontWeight: 500, fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>Coordinator Name <span style={{color:'red'}}>*</span></label>
+              <input type="text" name="enterprise_coordinator_name" value={formData.enterprise_coordinator_name} onChange={handleChange} required style={{width: '100%', padding: '0.9rem 1rem', borderRadius: '10px', border: '1px solid #cfd8dc', fontSize: '0.95rem', boxSizing: 'border-box'}} />
             </div>
             <div style={{width: '100%', boxSizing: 'border-box'}}>
-              <label style={{
-                fontWeight: 500,
-                fontSize: '0.95rem',
-                display: 'block',
-                marginBottom: '0.5rem'
-              }}>Coordinator Contact <small style={{color:'#78909c', fontWeight: 'normal'}}>(10 digits)</small> <span style={{color:'red'}}>*</span></label>
-              <input 
-                type="tel" 
-                maxLength={10} 
-                name="enterprise_coordinator_contact" 
-                value={formData.enterprise_coordinator_contact} 
-                onChange={handleChange} 
-                required 
-                style={{
-                  width: '100%',
-                  padding: '0.9rem 1rem',
-                  borderRadius: '10px',
-                  border: '1px solid #cfd8dc',
-                  fontSize: '0.95rem',
-                  boxSizing: 'border-box'
-                }}
-              />
+              <label style={{ fontWeight: 500, fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>Coordinator Contact <small style={{color:'#78909c', fontWeight: 'normal'}}>(10 digits)</small> <span style={{color:'red'}}>*</span></label>
+              <input type="tel" maxLength={10} name="enterprise_coordinator_contact" value={formData.enterprise_coordinator_contact} onChange={handleChange} required style={{width: '100%', padding: '0.9rem 1rem', borderRadius: '10px', border: '1px solid #cfd8dc', fontSize: '0.95rem', boxSizing: 'border-box'}} />
             </div>
           </div>
 
-          {/* SECTION B: SINGLE ENTREPRENEUR */}
           <div style={{ 
             background: '#f8fbff', 
             padding: '1.8rem 1.5rem', 
@@ -498,70 +365,18 @@ function App() {
                 boxSizing: 'border-box'
               }}>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
-                  <label style={{
-                    fontSize:'0.95rem',
-                    display:'block',
-                    marginBottom:'0.5rem'
-                  }}>Full Name <span style={{color:'red'}}>*</span></label>
-                  <input 
-                    type="text" 
-                    value={formData.entrepreneur.full_name} 
-                    onChange={(e)=>handleChange(e,'entrepreneur',null,'full_name')} 
-                    required 
-                    style={{
-                      width:'100%',
-                      padding:'0.9rem 1rem',
-                      borderRadius:'8px',
-                      border:'1px solid #cfd8dc',
-                      fontSize:'0.95rem',
-                      boxSizing: 'border-box'
-                    }} 
-                  />
+                  <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Full Name <span style={{color:'red'}}>*</span></label>
+                  <input type="text" value={formData.entrepreneur.full_name} onChange={(e)=>handleChange(e,'entrepreneur',null,'full_name')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
                 </div>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
-                  <label style={{
-                    fontSize:'0.95rem',
-                    display:'block',
-                    marginBottom:'0.5rem'
-                  }}>Phone / WhatsApp <span style={{color:'red'}}>*</span></label>
-                  <input 
-                    type="tel" 
-                    maxLength={10} 
-                    value={formData.entrepreneur.phone_whatsapp} 
-                    onChange={(e)=>handleChange(e,'entrepreneur',null,'phone_whatsapp')} 
-                    required 
-                    style={{
-                      width:'100%',
-                      padding:'0.9rem 1rem',
-                      borderRadius:'8px',
-                      border:'1px solid #cfd8dc',
-                      fontSize:'0.95rem',
-                      boxSizing: 'border-box'
-                    }} 
-                  />
+                  <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Phone / WhatsApp <span style={{color:'red'}}>*</span></label>
+                  <input type="tel" maxLength={10} value={formData.entrepreneur.phone_whatsapp} onChange={(e)=>handleChange(e,'entrepreneur',null,'phone_whatsapp')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
                 </div>
               </div>
 
               <div style={{marginBottom:'1.5rem', width: '100%', boxSizing: 'border-box'}}>
-                <label style={{
-                  fontSize:'0.95rem',
-                  display:'block',
-                  marginBottom:'0.5rem'
-                }}>Business Name & Type <span style={{color:'red'}}>*</span></label>
-                <input 
-                  type="text" 
-                  value={formData.entrepreneur.business_name_type} 
-                  onChange={(e)=>handleChange(e,'entrepreneur',null,'business_name_type')} 
-                  required 
-                  style={{
-                    width:'100%',
-                    padding:'0.9rem 1rem',
-                    borderRadius:'8px',
-                    border:'1px solid #cfd8dc',
-                    fontSize:'0.95rem',
-                    boxSizing: 'border-box'
-                  }} 
-                />
+                <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Business Name & Type <span style={{color:'red'}}>*</span></label>
+                <input type="text" value={formData.entrepreneur.business_name_type} onChange={(e)=>handleChange(e,'entrepreneur',null,'business_name_type')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}} />
               </div>
 
               <div style={{
@@ -572,24 +387,8 @@ function App() {
                 boxSizing: 'border-box'
               }}>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
-                  <label style={{
-                    fontSize:'0.95rem',
-                    display:'block',
-                    marginBottom:'0.5rem'
-                  }}>Sector <span style={{color:'red'}}>*</span></label>
-                  <select 
-                    value={formData.entrepreneur.sector} 
-                    onChange={(e)=>handleChange(e,'entrepreneur',null,'sector')} 
-                    required 
-                    style={{
-                      width:'100%',
-                      padding:'0.9rem 1rem',
-                      borderRadius:'8px',
-                      border:'1px solid #cfd8dc',
-                      fontSize:'0.95rem',
-                      boxSizing: 'border-box'
-                    }}
-                  >
+                  <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Sector <span style={{color:'red'}}>*</span></label>
+                  <select value={formData.entrepreneur.sector} onChange={(e)=>handleChange(e,'entrepreneur',null,'sector')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
                     <option value="">-- Select --</option>
                     <option value="Agriculture">Agriculture</option>
                     <option value="Tech/ICT">Tech/ICT</option>
@@ -602,24 +401,8 @@ function App() {
                   </select>
                 </div>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
-                  <label style={{
-                    fontSize:'0.95rem',
-                    display:'block',
-                    marginBottom:'0.5rem'
-                  }}>Years in Business <span style={{color:'red'}}>*</span></label>
-                  <select 
-                    value={formData.entrepreneur.years_in_business} 
-                    onChange={(e)=>handleChange(e,'entrepreneur',null,'years_in_business')} 
-                    required 
-                    style={{
-                      width:'100%',
-                      padding:'0.9rem 1rem',
-                      borderRadius:'8px',
-                      border:'1px solid #cfd8dc',
-                      fontSize:'0.95rem',
-                      boxSizing: 'border-box'
-                    }}
-                  >
+                  <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Years in Business <span style={{color:'red'}}>*</span></label>
+                  <select value={formData.entrepreneur.years_in_business} onChange={(e)=>handleChange(e,'entrepreneur',null,'years_in_business')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
                     <option value="">-- Select --</option>
                     <option value="<1yr">&lt; 1 year</option>
                     <option value="1-3yrs">1–3 years</option>
@@ -628,24 +411,8 @@ function App() {
                   </select>
                 </div>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
-                  <label style={{
-                    fontSize:'0.95rem',
-                    display:'block',
-                    marginBottom:'0.5rem'
-                  }}>Can Mentor? <span style={{color:'red'}}>*</span></label>
-                  <select 
-                    value={formData.entrepreneur.can_mentor} 
-                    onChange={(e)=>handleChange(e,'entrepreneur',null,'can_mentor')} 
-                    required 
-                    style={{
-                      width:'100%',
-                      padding:'0.9rem 1rem',
-                      borderRadius:'8px',
-                      border:'1px solid #cfd8dc',
-                      fontSize:'0.95rem',
-                      boxSizing: 'border-box'
-                    }}
-                  >
+                  <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem' }}>Can Mentor? <span style={{color:'red'}}>*</span></label>
+                  <select value={formData.entrepreneur.can_mentor} onChange={(e)=>handleChange(e,'entrepreneur',null,'can_mentor')} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box'}}>
                     <option value="">-- Select --</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -655,7 +422,6 @@ function App() {
             </div>
           </div>
 
-          {/* SUBMIT BUTTON ONLY */}
           <div style={{textAlign:'center', marginTop: '0.5rem'}}>
             <button 
               type="submit" 

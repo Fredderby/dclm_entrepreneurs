@@ -4,25 +4,39 @@ sys.path.append(".")
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, get_db
+# ✅ CORRECT IMPORT: import the FUNCTION, not the module
 from models import create_dynamic_model
 import uuid
 from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
 
-# Create the model class
+# ✅ FIX: Call the function correctly — NO MORE "Module is not callable" ERROR
 SheetData = create_dynamic_model()
 
-# Create tables in database
+# Create all tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="DCLM Entrepreneurship Database API")
+app = FastAPI(
+    title="DCLM Entrepreneurship Database API",
+    version="1.0.0"
+)
 
+# CORS setup
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Save endpoint
 @app.post("/add-to-sheet/")
 def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
         row_id = str(uuid.uuid4())
         synced_at = datetime.utcnow().isoformat()
 
-        # Top-level fields
         entry_data = {
             "row_id": row_id,
             "synced_at": synced_at,
@@ -31,7 +45,7 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             "enterprise_coordinator_contact": data.get("enterprise_coordinator_contact")
         }
 
-        # Unpack nested entrepreneur object
+        # Unpack entrepreneur object
         entrepreneur = data.get("entrepreneur", {})
         entry_data.update({
             "entrepreneur_full_name": entrepreneur.get("full_name"),
@@ -42,14 +56,14 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             "entrepreneur_can_mentor": entrepreneur.get("can_mentor")
         })
 
-        # Save to DB
+        # Save
         new_entry = SheetData(**entry_data)
         db.add(new_entry)
         db.commit()
         db.refresh(new_entry)
 
-        return {"status": "success", "message": "Data saved successfully", "id": new_entry.id}
+        return {"status": "success", "id": new_entry.id}
 
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"Error saving data: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
