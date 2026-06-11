@@ -18,3 +18,5 @@ services:
 networks:
   default:
     name: entrepreneur-dclm-a1spks_default
+    labels:
+      com.docker.compose.network: "default"
