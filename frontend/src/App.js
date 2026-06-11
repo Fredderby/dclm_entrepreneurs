@@ -55,7 +55,6 @@ function App() {
     region_division_group_name: "",
     enterprise_coordinator_name: "",
     enterprise_coordinator_contact: "",
-    // ✅ ONLY ONE ENTREPRENEUR
     entrepreneur: {
       full_name: "",
       phone_whatsapp: "",
@@ -63,11 +62,7 @@ function App() {
       sector: "",
       years_in_business: "",
       can_mentor: ""
-    },
-    professionals: [
-      { full_name: "", skill_profession: "", willing_to_train: "" },
-      { full_name: "", skill_profession: "", willing_to_train: "" }
-    ]
+    }
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -92,7 +87,6 @@ function App() {
     if (!formData.enterprise_coordinator_contact.trim()) errors.push("• Coordinator Contact is required");
     else if (!isValidPhone(formData.enterprise_coordinator_contact)) errors.push("• Coordinator Contact must be exactly 10 digits");
 
-    // ✅ VALIDATE SINGLE ENTREPRENEUR
     const ent = formData.entrepreneur;
     if (!ent.full_name.trim()) errors.push("• Entrepreneur: Full Name required");
     else if (hasNumbers(ent.full_name)) errors.push("• Entrepreneur: Name cannot have numbers");
@@ -107,17 +101,6 @@ function App() {
     if (!ent.years_in_business) errors.push("• Entrepreneur: Select Years in Business");
     if (!ent.can_mentor) errors.push("• Entrepreneur: Select Mentorship option");
 
-    // ✅ VALIDATE PROFESSIONALS
-    formData.professionals.forEach((prof, idx) => {
-      if (!prof.full_name.trim()) errors.push(`• Professional ${idx+1}: Full Name required`);
-      else if (hasNumbers(prof.full_name)) errors.push(`• Professional ${idx+1}: Name cannot have numbers`);
-
-      if (!prof.skill_profession.trim()) errors.push(`• Professional ${idx+1}: Skill/Profession required`);
-      else if (hasNumbers(prof.skill_profession)) errors.push(`• Professional ${idx+1}: Skill cannot have numbers`);
-
-      if (!prof.willing_to_train) errors.push(`• Professional ${idx+1}: Select Training option`);
-    });
-
     return errors;
   };
 
@@ -128,12 +111,6 @@ function App() {
         ...prev,
         entrepreneur: { ...prev.entrepreneur, [field]: val }
       }));
-    } else if (section === 'professionals') {
-      setFormData(prev => {
-        const arr = [...prev.professionals];
-        arr[index] = { ...arr[index], [field]: val };
-        return { ...prev, professionals: arr };
-      });
     } else {
       setFormData(prev => ({ ...prev, [e.target.name]: val }));
     }
@@ -192,8 +169,7 @@ function App() {
         region_division_group_name: "",
         enterprise_coordinator_name: "",
         enterprise_coordinator_contact: "",
-        entrepreneur: { full_name: "", phone_whatsapp: "", business_name_type: "", sector: "", years_in_business: "", can_mentor: "" },
-        professionals: [ { full_name: "", skill_profession: "", willing_to_train: "" }, { full_name: "", skill_profession: "", willing_to_train: "" } ]
+        entrepreneur: { full_name: "", phone_whatsapp: "", business_name_type: "", sector: "", years_in_business: "", can_mentor: "" }
       });
     } catch (err) {
       setError("Submission failed: " + (err.response?.data?.detail || err.message));
@@ -204,22 +180,31 @@ function App() {
 
   return (
     <div style={{ 
-      minHeight: '100vh', background: 'linear-gradient(135deg, #eaf4ff 0%, #f0f8ff 100%)', 
-      padding: '1rem 0.8rem', fontFamily: 'Segoe UI, Roboto, sans-serif', boxSizing: 'border-box'
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #eaf4ff 0%, #f0f8ff 100%)', 
+      padding: '1.5rem 1rem', 
+      fontFamily: 'Segoe UI, Roboto, sans-serif', 
+      boxSizing: 'border-box'
     }}>
       <div style={{
-        maxWidth: '820px', margin: '0 auto', background: '#ffffff', borderRadius: '20px',
-        boxShadow: '0 8px 32px rgba(26, 115, 232, 0.12)', padding: '1.5rem 1.2rem 2rem',
-        border: '1px solid rgba(26, 115, 232, 0.08)', width: '100%', boxSizing: 'border-box'
+        maxWidth: '820px', 
+        margin: '0 auto', 
+        background: '#ffffff', 
+        borderRadius: '20px',
+        boxShadow: '0 8px 32px rgba(26, 115, 232, 0.12)', 
+        padding: '2rem 1.5rem 2.5rem',
+        border: '1px solid rgba(26, 115, 232, 0.08)', 
+        width: '100%', 
+        boxSizing: 'border-box'
       }}>
         {/* ✅ HEADER: Logo beside heading + background, SUBTITLE REMOVED */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
           gap: '1rem', 
-          marginBottom: '2rem',
+          marginBottom: '2.5rem',
           borderBottom: '2px solid #eaf4ff', 
-          padding: '1.2rem',
+          padding: '1.5rem',
           flexWrap: 'nowrap',
           minWidth: 0,
           backgroundImage: 'url(https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80)',
@@ -238,7 +223,7 @@ function App() {
               objectFit: 'contain',
               flexShrink: 0,
               backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              padding: '0.3rem',
+              padding: '0.4rem',
               borderRadius: '8px'
             }}
             onError={(e) => {
@@ -252,7 +237,7 @@ function App() {
               fontSize: 'clamp(1.1rem, 3.5vw, 1.9rem)', 
               margin: 0, 
               fontWeight: 700,
-              lineHeight: 1.2,
+              lineHeight: 1.3,
               textShadow: '0 1px 2px rgba(255, 255, 255, 0.9)'
             }}>
               DCLM-Ghana Entrepreneurship Database
@@ -261,39 +246,127 @@ function App() {
         </div>
 
         {/* MESSAGES */}
-        {error && <div style={{ background: '#ffebee', color: '#c62828', padding: '0.9rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', borderLeft: '4px solid #c62828', whiteSpace: 'pre-line' }}>❌ {error}</div>}
-        {submitted && <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '0.9rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', borderLeft: '4px solid #2e7d32' }}>✅ Submitted successfully!</div>}
+        {error && <div style={{ background: '#ffebee', color: '#c62828', padding: '1rem 1.2rem', borderRadius: '12px', marginBottom: '2rem', borderLeft: '4px solid #c62828', whiteSpace: 'pre-line', lineHeight: '1.5' }}>❌ {error}</div>}
+        {submitted && <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '1rem 1.2rem', borderRadius: '12px', marginBottom: '2rem', borderLeft: '4px solid #2e7d32' }}>✅ Submitted successfully!</div>}
 
-        {/* ✅ FORM STARTS DIRECTLY — NO STEP 1 */}
-        <form onSubmit={handleSubmit}>
+        {/* ✅ FORM STARTS DIRECTLY — NO STEP 1, NO PROFESSIONALS, NO INVESTMENT/DIASPORA */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {/* SECTION A: DROPDOWNS & COORDINATOR */}
-          <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
-            <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>A</span>
+          <div style={{ 
+            background: '#f8fbff', 
+            padding: '1.8rem 1.5rem', 
+            borderRadius: '16px', 
+            border: '1px solid #eaf4ff', 
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <h3 style={{ 
+              color: '#1a73e8', 
+              marginTop: 0, 
+              marginBottom: '1.5rem',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.6rem',
+              fontSize: '1.1rem'
+            }}>
+              <span style={{
+                background:'#1a73e8',
+                color:'white',
+                width:'26px',
+                height:'26px',
+                borderRadius:'50%',
+                display:'flex',
+                alignItems:'center',
+                justifyContent:'center',
+                fontSize:'0.9rem',
+                flexShrink: 0
+              }}>A</span>
               Region/Division Information
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+              gap: '1.4rem', 
+              marginBottom: '1.5rem',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}>
               {/* Zone */}
-              <div>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Zone <span style={{color:'red'}}>*</span></label>
-                <select value={selectedZone} onChange={handleZoneChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+              <div style={{ width: '100%' }}>
+                <label style={{
+                  fontWeight: 500,
+                  fontSize: '0.95rem',
+                  display: 'block',
+                  marginBottom: '0.5rem'
+                }}>Zone <span style={{color:'red'}}>*</span></label>
+                <select 
+                  value={selectedZone} 
+                  onChange={handleZoneChange} 
+                  required 
+                  style={{
+                    width: '100%',
+                    padding: '0.9rem 1rem',
+                    borderRadius: '10px',
+                    border: '1px solid #cfd8dc',
+                    fontSize: '0.95rem',
+                    boxSizing: 'border-box'
+                  }}
+                >
                   <option value="">-- Select Zone --</option>
                   {Object.keys(zone_region_divisions).map(z => <option key={z} value={z}>{z}</option>)}
                 </select>
               </div>
               {/* Region */}
-              <div>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Region <span style={{color:'red'}}>*</span></label>
-                <select value={selectedRegion} onChange={handleRegionChange} required disabled={!selectedZone} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem', background: selectedZone ? 'white' : '#f5f5f5'}}>
+              <div style={{ width: '100%' }}>
+                <label style={{
+                  fontWeight: 500,
+                  fontSize: '0.95rem',
+                  display: 'block',
+                  marginBottom: '0.5rem'
+                }}>Region <span style={{color:'red'}}>*</span></label>
+                <select 
+                  value={selectedRegion} 
+                  onChange={handleRegionChange} 
+                  required 
+                  disabled={!selectedZone} 
+                  style={{
+                    width: '100%',
+                    padding: '0.9rem 1rem',
+                    borderRadius: '10px',
+                    border: '1px solid #cfd8dc',
+                    fontSize: '0.95rem',
+                    boxSizing: 'border-box',
+                    backgroundColor: selectedZone ? 'white' : '#f5f5f5'
+                  }}
+                >
                   <option value="">-- Select Region --</option>
                   {selectedZone && Object.keys(zone_region_divisions[selectedZone]).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               {/* Division */}
-              <div>
-                <label style={{fontWeight:500,fontSize:'0.9rem'}}>Division <span style={{color:'red'}}>*</span></label>
-                <select value={selectedDivision} onChange={handleDivisionChange} required disabled={!selectedRegion} style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem', background: selectedRegion ? 'white' : '#f5f5f5'}}>
+              <div style={{ width: '100%' }}>
+                <label style={{
+                  fontWeight: 500,
+                  fontSize: '0.95rem',
+                  display: 'block',
+                  marginBottom: '0.5rem'
+                }}>Division <span style={{color:'red'}}>*</span></label>
+                <select 
+                  value={selectedDivision} 
+                  onChange={handleDivisionChange} 
+                  required 
+                  disabled={!selectedRegion} 
+                  style={{
+                    width: '100%',
+                    padding: '0.9rem 1rem',
+                    borderRadius: '10px',
+                    border: '1px solid #cfd8dc',
+                    fontSize: '0.95rem',
+                    boxSizing: 'border-box',
+                    backgroundColor: selectedRegion ? 'white' : '#f5f5f5'
+                  }}
+                >
                   <option value="">-- Select Division --</option>
                   {selectedRegion && zone_region_divisions[selectedZone][selectedRegion].map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
@@ -301,48 +374,222 @@ function App() {
             </div>
 
             {/* Read-only combined location */}
-            <div style={{margin:'1rem 0'}}>
-              <label style={{fontWeight:500,fontSize:'0.9rem'}}>Full Location</label>
-              <input type="text" name="region_division_group_name" value={formData.region_division_group_name} readOnly style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #e0e7ee',background:'#f8f9fa',marginTop:'0.3rem'}} />
+            <div style={{marginBottom: '1.5rem', width: '100%', boxSizing: 'border-box'}}>
+              <label style={{
+                fontWeight: 500,
+                fontSize: '0.95rem',
+                display: 'block',
+                marginBottom: '0.5rem'
+              }}>Full Location</label>
+              <input 
+                type="text" 
+                name="region_division_group_name" 
+                value={formData.region_division_group_name} 
+                readOnly 
+                style={{
+                  width: '100%',
+                  padding: '0.9rem 1rem',
+                  borderRadius: '10px',
+                  border: '1px solid #e0e7ee',
+                  backgroundColor: '#f8f9fa',
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
+                }}
+              />
             </div>
 
             {/* Coordinator Details */}
-            <div style={{margin:'1rem 0'}}>
-              <label style={{fontWeight:500,fontSize:'0.9rem'}}>Coordinator Name <span style={{color:'red'}}>*</span></label>
-              <input type="text" name="enterprise_coordinator_name" value={formData.enterprise_coordinator_name} onChange={handleChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+            <div style={{marginBottom: '1.2rem', width: '100%', boxSizing: 'border-box'}}>
+              <label style={{
+                fontWeight: 500,
+                fontSize: '0.95rem',
+                display: 'block',
+                marginBottom: '0.5rem'
+              }}>Coordinator Name <span style={{color:'red'}}>*</span></label>
+              <input 
+                type="text" 
+                name="enterprise_coordinator_name" 
+                value={formData.enterprise_coordinator_name} 
+                onChange={handleChange} 
+                required 
+                style={{
+                  width: '100%',
+                  padding: '0.9rem 1rem',
+                  borderRadius: '10px',
+                  border: '1px solid #cfd8dc',
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
+                }}
+              />
             </div>
-            <div style={{margin:'1rem 0'}}>
-              <label style={{fontWeight:500,fontSize:'0.9rem'}}>Coordinator Contact <small style={{color:'#78909c'}}>(10 digits)</small> <span style={{color:'red'}}>*</span></label>
-              <input type="tel" maxLength={10} name="enterprise_coordinator_contact" value={formData.enterprise_coordinator_contact} onChange={handleChange} required style={{width:'100%',padding:'0.8rem',borderRadius:'10px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+            <div style={{width: '100%', boxSizing: 'border-box'}}>
+              <label style={{
+                fontWeight: 500,
+                fontSize: '0.95rem',
+                display: 'block',
+                marginBottom: '0.5rem'
+              }}>Coordinator Contact <small style={{color:'#78909c', fontWeight: 'normal'}}>(10 digits)</small> <span style={{color:'red'}}>*</span></label>
+              <input 
+                type="tel" 
+                maxLength={10} 
+                name="enterprise_coordinator_contact" 
+                value={formData.enterprise_coordinator_contact} 
+                onChange={handleChange} 
+                required 
+                style={{
+                  width: '100%',
+                  padding: '0.9rem 1rem',
+                  borderRadius: '10px',
+                  border: '1px solid #cfd8dc',
+                  fontSize: '0.95rem',
+                  boxSizing: 'border-box'
+                }}
+              />
             </div>
           </div>
 
           {/* SECTION B: SINGLE ENTREPRENEUR */}
-          <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
-            <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>B</span>
+          <div style={{ 
+            background: '#f8fbff', 
+            padding: '1.8rem 1.5rem', 
+            borderRadius: '16px', 
+            border: '1px solid #eaf4ff', 
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <h3 style={{ 
+              color: '#1a73e8', 
+              marginTop: 0, 
+              marginBottom: '1.5rem',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.6rem',
+              fontSize: '1.1rem'
+            }}>
+              <span style={{
+                background:'#1a73e8',
+                color:'white',
+                width:'26px',
+                height:'26px',
+                borderRadius:'50%',
+                display:'flex',
+                alignItems:'center',
+                justifyContent:'center',
+                fontSize:'0.9rem',
+                flexShrink: 0
+              }}>B</span>
               Entrepreneur Details
             </h3>
 
-            <div style={{background:'white',padding:'1.2rem',borderRadius:'12px',border:'1px solid #e0e7ee',margin:'1.2rem 0'}}>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem',margin:'1rem 0'}}>
-                <div>
-                  <label style={{fontSize:'0.85rem'}}>Full Name <span style={{color:'red'}}>*</span></label>
-                  <input type="text" value={formData.entrepreneur.full_name} onChange={(e)=>handleChange(e,'entrepreneur',null,'full_name')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+            <div style={{
+              background:'white',
+              padding:'1.5rem',
+              borderRadius:'12px',
+              border:'1px solid #e0e7ee',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{
+                display:'grid',
+                gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',
+                gap:'1.4rem',
+                marginBottom:'1.5rem',
+                width: '100%',
+                boxSizing: 'border-box'
+              }}>
+                <div style={{width: '100%', boxSizing: 'border-box'}}>
+                  <label style={{
+                    fontSize:'0.95rem',
+                    display:'block',
+                    marginBottom:'0.5rem'
+                  }}>Full Name <span style={{color:'red'}}>*</span></label>
+                  <input 
+                    type="text" 
+                    value={formData.entrepreneur.full_name} 
+                    onChange={(e)=>handleChange(e,'entrepreneur',null,'full_name')} 
+                    required 
+                    style={{
+                      width:'100%',
+                      padding:'0.9rem 1rem',
+                      borderRadius:'8px',
+                      border:'1px solid #cfd8dc',
+                      fontSize:'0.95rem',
+                      boxSizing: 'border-box'
+                    }} 
+                  />
                 </div>
-                <div>
-                  <label style={{fontSize:'0.85rem'}}>Phone / WhatsApp <span style={{color:'red'}}>*</span></label>
-                  <input type="tel" maxLength={10} value={formData.entrepreneur.phone_whatsapp} onChange={(e)=>handleChange(e,'entrepreneur',null,'phone_whatsapp')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+                <div style={{width: '100%', boxSizing: 'border-box'}}>
+                  <label style={{
+                    fontSize:'0.95rem',
+                    display:'block',
+                    marginBottom:'0.5rem'
+                  }}>Phone / WhatsApp <span style={{color:'red'}}>*</span></label>
+                  <input 
+                    type="tel" 
+                    maxLength={10} 
+                    value={formData.entrepreneur.phone_whatsapp} 
+                    onChange={(e)=>handleChange(e,'entrepreneur',null,'phone_whatsapp')} 
+                    required 
+                    style={{
+                      width:'100%',
+                      padding:'0.9rem 1rem',
+                      borderRadius:'8px',
+                      border:'1px solid #cfd8dc',
+                      fontSize:'0.95rem',
+                      boxSizing: 'border-box'
+                    }} 
+                  />
                 </div>
               </div>
-              <div style={{margin:'1rem 0'}}>
-                <label style={{fontSize:'0.85rem'}}>Business Name & Type <span style={{color:'red'}}>*</span></label>
-                <input type="text" value={formData.entrepreneur.business_name_type} onChange={(e)=>handleChange(e,'entrepreneur',null,'business_name_type')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
+
+              <div style={{marginBottom:'1.5rem', width: '100%', boxSizing: 'border-box'}}>
+                <label style={{
+                  fontSize:'0.95rem',
+                  display:'block',
+                  marginBottom:'0.5rem'
+                }}>Business Name & Type <span style={{color:'red'}}>*</span></label>
+                <input 
+                  type="text" 
+                  value={formData.entrepreneur.business_name_type} 
+                  onChange={(e)=>handleChange(e,'entrepreneur',null,'business_name_type')} 
+                  required 
+                  style={{
+                    width:'100%',
+                    padding:'0.9rem 1rem',
+                    borderRadius:'8px',
+                    border:'1px solid #cfd8dc',
+                    fontSize:'0.95rem',
+                    boxSizing: 'border-box'
+                  }} 
+                />
               </div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'0.8rem'}}>
-                <div>
-                  <label style={{fontSize:'0.85rem'}}>Sector <span style={{color:'red'}}>*</span></label>
-                  <select value={formData.entrepreneur.sector} onChange={(e)=>handleChange(e,'entrepreneur',null,'sector')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+
+              <div style={{
+                display:'grid',
+                gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',
+                gap:'1.2rem',
+                width: '100%',
+                boxSizing: 'border-box'
+              }}>
+                <div style={{width: '100%', boxSizing: 'border-box'}}>
+                  <label style={{
+                    fontSize:'0.95rem',
+                    display:'block',
+                    marginBottom:'0.5rem'
+                  }}>Sector <span style={{color:'red'}}>*</span></label>
+                  <select 
+                    value={formData.entrepreneur.sector} 
+                    onChange={(e)=>handleChange(e,'entrepreneur',null,'sector')} 
+                    required 
+                    style={{
+                      width:'100%',
+                      padding:'0.9rem 1rem',
+                      borderRadius:'8px',
+                      border:'1px solid #cfd8dc',
+                      fontSize:'0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                  >
                     <option value="">-- Select --</option>
                     <option value="Agriculture">Agriculture</option>
                     <option value="Tech/ICT">Tech/ICT</option>
@@ -354,9 +601,25 @@ function App() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
-                <div>
-                  <label style={{fontSize:'0.85rem'}}>Years in Business <span style={{color:'red'}}>*</span></label>
-                  <select value={formData.entrepreneur.years_in_business} onChange={(e)=>handleChange(e,'entrepreneur',null,'years_in_business')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+                <div style={{width: '100%', boxSizing: 'border-box'}}>
+                  <label style={{
+                    fontSize:'0.95rem',
+                    display:'block',
+                    marginBottom:'0.5rem'
+                  }}>Years in Business <span style={{color:'red'}}>*</span></label>
+                  <select 
+                    value={formData.entrepreneur.years_in_business} 
+                    onChange={(e)=>handleChange(e,'entrepreneur',null,'years_in_business')} 
+                    required 
+                    style={{
+                      width:'100%',
+                      padding:'0.9rem 1rem',
+                      borderRadius:'8px',
+                      border:'1px solid #cfd8dc',
+                      fontSize:'0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                  >
                     <option value="">-- Select --</option>
                     <option value="<1yr">&lt; 1 year</option>
                     <option value="1-3yrs">1–3 years</option>
@@ -364,9 +627,25 @@ function App() {
                     <option value="5+yrs">5+ years</option>
                   </select>
                 </div>
-                <div>
-                  <label style={{fontSize:'0.85rem'}}>Can Mentor? <span style={{color:'red'}}>*</span></label>
-                  <select value={formData.entrepreneur.can_mentor} onChange={(e)=>handleChange(e,'entrepreneur',null,'can_mentor')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
+                <div style={{width: '100%', boxSizing: 'border-box'}}>
+                  <label style={{
+                    fontSize:'0.95rem',
+                    display:'block',
+                    marginBottom:'0.5rem'
+                  }}>Can Mentor? <span style={{color:'red'}}>*</span></label>
+                  <select 
+                    value={formData.entrepreneur.can_mentor} 
+                    onChange={(e)=>handleChange(e,'entrepreneur',null,'can_mentor')} 
+                    required 
+                    style={{
+                      width:'100%',
+                      padding:'0.9rem 1rem',
+                      borderRadius:'8px',
+                      border:'1px solid #cfd8dc',
+                      fontSize:'0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                  >
                     <option value="">-- Select --</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -376,47 +655,36 @@ function App() {
             </div>
           </div>
 
-          {/* SECTION C: PROFESSIONALS (2 entries) */}
-          <div style={{ background: '#f8fbff', padding: '1.2rem', borderRadius: '16px', border: '1px solid #eaf4ff', marginBottom: '1.8rem' }}>
-            <h3 style={{ color: '#1a73e8', marginTop: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{background:'#1a73e8',color:'white',width:'24px',height:'24px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'0.85rem'}}>C</span>
-              Professionals
-            </h3>
-
-            {formData.professionals.map((prof, idx) => (
-              <div key={idx} style={{background:'white',padding:'1.2rem',borderRadius:'12px',border:'1px solid #e0e7ee',margin:'1.2rem 0'}}>
-                <h4 style={{color:'#0d47a1',marginTop:0}}>Professional {idx+1}</h4>
-                <div style={{margin:'1rem 0'}}>
-                  <label style={{fontSize:'0.85rem'}}>Full Name <span style={{color:'red'}}>*</span></label>
-                  <input type="text" value={prof.full_name} onChange={(e)=>handleChange(e,'professionals',idx,'full_name')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-                </div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'1rem'}}>
-                  <div>
-                    <label style={{fontSize:'0.85rem'}}>Skill / Profession <span style={{color:'red'}}>*</span></label>
-                    <input type="text" value={prof.skill_profession} onChange={(e)=>handleChange(e,'professionals',idx,'skill_profession')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}} />
-                  </div>
-                  <div>
-                    <label style={{fontSize:'0.85rem'}}>Willing to Train? <span style={{color:'red'}}>*</span></label>
-                    <select value={prof.willing_to_train} onChange={(e)=>handleChange(e,'professionals',idx,'willing_to_train')} required style={{width:'100%',padding:'0.7rem',borderRadius:'8px',border:'1px solid #cfd8dc',marginTop:'0.3rem'}}>
-                      <option value="">-- Select --</option>
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* SUBMIT BUTTON ONLY — NO INVESTMENT/DIASPORA SECTION */}
-          <div style={{textAlign:'center'}}>
-            <button type="submit" disabled={loading} style={{padding:'0.9rem 3rem',background:loading?'#90caf9':'linear-gradient(135deg,#1a73e8,#0d47a1)',color:'white',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'1rem',cursor:loading?'not-allowed':'pointer'}}>
+          {/* SUBMIT BUTTON ONLY */}
+          <div style={{textAlign:'center', marginTop: '0.5rem'}}>
+            <button 
+              type="submit" 
+              disabled={loading} 
+              style={{
+                padding:'1rem 3.5rem',
+                background: loading ? '#90caf9' : 'linear-gradient(135deg,#1a73e8,#0d47a1)',
+                color:'white',
+                border:'none',
+                borderRadius:'10px',
+                fontWeight:600,
+                fontSize:'1.05rem',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                minWidth: '180px'
+              }}
+            >
               {loading ? "Processing..." : "✓ Submit Form"}
             </button>
           </div>
         </form>
 
-        <div style={{textAlign:'center',color:'#78909c',fontSize:'0.8rem',marginTop:'2rem',borderTop:'1px solid #eaf4ff',paddingTop:'1rem'}}>
+        <div style={{
+          textAlign:'center',
+          color:'#78909c',
+          fontSize:'0.85rem',
+          marginTop:'2.5rem',
+          borderTop:'1px solid #eaf4ff',
+          paddingTop:'1.2rem'
+        }}>
           DCLM-Ghana • Entrepreneurship Database System
         </div>
       </div>
