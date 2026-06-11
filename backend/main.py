@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 
 from database import engine, get_db, Base
-from models import Entrepreneur, SheetData
+from models import SheetData
 from schemas import SheetDataResponse
 
 # --------------------------
