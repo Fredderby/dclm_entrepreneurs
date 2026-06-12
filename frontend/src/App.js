@@ -52,7 +52,9 @@ function App() {
   const [selectedDivision, setSelectedDivision] = useState("");
 
   const [formData, setFormData] = useState({
-    region_division_group_name: "",
+    zone: "",
+    region: "",
+    division: "",
     enterprise_coordinator_name: "",
     enterprise_coordinator_contact: "",
     entrepreneur_full_name: "",
@@ -109,28 +111,20 @@ function App() {
     setSelectedZone(zone);
     setSelectedRegion("");
     setSelectedDivision("");
-    setFormData(prev => ({ ...prev, region_division_group_name: zone }));
+    setFormData(prev => ({ ...prev, zone: zone }));
   };
 
   const handleRegionChange = (e) => {
     const region = e.target.value;
     setSelectedRegion(region);
     setSelectedDivision("");
-    setFormData(prev => ({ 
-      ...prev, 
-      region_division_group_name: selectedZone && region ? `${selectedZone} → ${region}` : selectedZone 
-    }));
+    setFormData(prev => ({ ...prev, region: region }));
   };
 
   const handleDivisionChange = (e) => {
     const division = e.target.value;
     setSelectedDivision(division);
-    setFormData(prev => ({ 
-      ...prev, 
-      region_division_group_name: selectedZone && selectedRegion && division 
-        ? `${selectedZone} → ${selectedRegion} → ${division}` 
-        : prev.region_division_group_name 
-    }));
+    setFormData(prev => ({ ...prev, division: division }));
   };
 
   const handleSubmit = async (e) => {
@@ -148,7 +142,9 @@ function App() {
       setSubmitted(true);
       setSelectedZone(""); setSelectedRegion(""); setSelectedDivision("");
       setFormData({
-        region_division_group_name: "",
+        zone: "",
+    region: "",
+    division: "",
         enterprise_coordinator_name: "",
         enterprise_coordinator_contact: "",
         entrepreneur_full_name: "",
@@ -296,11 +292,6 @@ function App() {
                   {selectedRegion && zone_region_divisions[selectedZone][selectedRegion].map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
-            </div>
-
-            <div style={{marginBottom: '1.5rem', width: '100%', boxSizing: 'border-box'}}>
-              <label style={{ fontWeight: 500, fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>Full Location</label>
-              <input type="text" name="region_division_group_name" value={formData.region_division_group_name} readOnly style={{width: '100%', padding: '0.9rem 1rem', borderRadius: '10px', border: '1px solid #e0e7ee', backgroundColor: '#f8f9fa', fontSize: '0.95rem', boxSizing: 'border-box'}} />
             </div>
 
             <div style={{marginBottom: '1.2rem', width: '100%', boxSizing: 'border-box'}}>

@@ -6,7 +6,9 @@ class SheetData(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     row_id = Column(String(255), unique=True, index=True)
-    region_division_group_name = Column(String(255))
+    zone = Column(String(255))
+    region = Column(String(255))
+    division = Column(String(255))
     enterprise_coordinator_name = Column(String(255))
     enterprise_coordinator_contact = Column(String(50))
     entrepreneur_full_name = Column(String(255))

@@ -22,7 +22,6 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.post("/api/add-to-sheet/")
 def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
-        ent = data.get("entrepreneur", {})
         row_id = hashlib.md5(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
 
         if db.query(SheetData).filter_by(row_id=row_id).first():
@@ -30,15 +29,17 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
 
         sheet_data = SheetData(
             row_id=row_id,
-            region_division_group_name=data.get("region_division_group_name", ""),
+            zone=data.get("zone", ""),
+            region=data.get("region", ""),
+            division=data.get("division", ""),
             enterprise_coordinator_name=data.get("enterprise_coordinator_name", ""),
             enterprise_coordinator_contact=data.get("enterprise_coordinator_contact", ""),
-            entrepreneur_full_name=ent.get("full_name", ""),
-            entrepreneur_phone_whatsapp=ent.get("phone_whatsapp", ""),
-            entrepreneur_business_name_type=ent.get("business_name_type", ""),
-            entrepreneur_sector=ent.get("sector", ""),
-            entrepreneur_years_in_business=ent.get("years_in_business", ""),
-            entrepreneur_can_mentor=ent.get("can_mentor", ""),
+            entrepreneur_full_name=data.get("entrepreneur_full_name", ""),
+            entrepreneur_phone_whatsapp=data.get("entrepreneur_phone_whatsapp", ""),
+            entrepreneur_business_name_type=data.get("entrepreneur_business_name_type", ""),
+            entrepreneur_sector=data.get("entrepreneur_sector", ""),
+            entrepreneur_years_in_business=data.get("entrepreneur_years_in_business", ""),
+            entrepreneur_can_mentor=data.get("entrepreneur_can_mentor", ""),
             synced_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
         )
 
