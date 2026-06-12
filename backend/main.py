@@ -12,6 +12,8 @@ from database import engine, get_db, Base
 from models import SheetData
 
 load_dotenv()
+# Drop and recreate all tables
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="DCLM-Ghana Entrepreneurship Database")
