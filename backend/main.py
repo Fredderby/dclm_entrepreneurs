@@ -17,8 +17,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="DCLM-Ghana Entrepreneurship Database")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# Serve React frontend
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# ---------- API ROUTES (must be before static mount) ----------
 
 @app.post("/api/add-to-sheet/")
 def add_to_sheet(data: dict, db: Session = Depends(get_db)):
@@ -49,3 +48,6 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+# ---------- Static files (catch-all for frontend) ----------
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
