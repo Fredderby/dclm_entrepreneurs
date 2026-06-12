@@ -1,69 +1,51 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from datetime import datetime
-import hashlib
 import json
+import hashlib
+from datetime import datetime
+import os
+from dotenv import load_dotenv
 
 from database import engine, get_db, Base
-from models import Submission
-from schemas import SubmissionCreate
-from config import settings
+from models import SheetData
 
-# Create tables
+load_dotenv()
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="DCLM Database")
+app = FastAPI(title="DCLM-Ghana Entrepreneurship Database")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Serve React frontend
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
-# ✅ HEALTH CHECK
-@app.get("/")
-def health_check():
-    return {"status": "online", "database": "mysql", "timestamp": datetime.utcnow()}
-
-# ✅ SUBMIT ENDPOINT — ONLY REDUCED FIELDS
-@app.post("/api/add-to-db/")
-def add_submission(data: SubmissionCreate, db: Session = Depends(get_db)):
+@app.post("/api/add-to-sheet/")
+def add_to_sheet(data: dict, db: Session = Depends(get_db)):
     try:
-        # Generate unique row_id
-        raw = json.dumps(data.dict(), sort_keys=True)
-        row_id = hashlib.md5(raw.encode()).hexdigest()
+        ent = data.get("entrepreneur", {})
+        row_id = hashlib.md5(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
 
-        # Check duplicate
-        exists = db.query(Submission).filter(Submission.row_id == row_id).first()
-        if exists:
-            raise HTTPException(status_code=409, detail="This record already exists")
+        if db.query(SheetData).filter_by(row_id=row_id).first():
+            return {"status": "success", "message": "Already submitted"}
 
-        # Prepare data
-        db_data = Submission(
+        sheet_data = SheetData(
             row_id=row_id,
-            synced_at=datetime.utcnow().isoformat(),
-            region_division_group_name=data.region_division_group_name,
-            enterprise_coordinator_name=data.enterprise_coordinator_name,
-            enterprise_coordinator_contact=data.enterprise_coordinator_contact,
-            entrepreneur_full_name=data.entrepreneur_full_name,
-            entrepreneur_phone_whatsapp=data.entrepreneur_phone_whatsapp,
-            entrepreneur_business_name_type=data.entrepreneur_business_name_type,
-            entrepreneur_sector=data.entrepreneur_sector,
-            entrepreneur_years_in_business=data.entrepreneur_years_in_business,
-            entrepreneur_can_mentor=data.entrepreneur_can_mentor
+            region_division_group_name=data.get("region_division_group_name", ""),
+            enterprise_coordinator_name=data.get("enterprise_coordinator_name", ""),
+            enterprise_coordinator_contact=data.get("enterprise_coordinator_contact", ""),
+            entrepreneur_full_name=ent.get("full_name", ""),
+            entrepreneur_phone_whatsapp=ent.get("phone_whatsapp", ""),
+            entrepreneur_business_name_type=ent.get("business_name_type", ""),
+            entrepreneur_sector=ent.get("sector", ""),
+            entrepreneur_years_in_business=ent.get("years_in_business", ""),
+            entrepreneur_can_mentor=ent.get("can_mentor", ""),
+            synced_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
         )
 
-        # Save to MySQL
-        db.add(db_data)
+        db.add(sheet_data)
         db.commit()
-        db.refresh(db_data)
-
-        return {"status": "success", "message": "Saved to MySQL", "id": db_data.id}
-
+        return {"status": "success", "message": "Form submitted successfully"}
     except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        print(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
