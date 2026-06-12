@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 
 // ✅ Correct API URL — matches backend port & prefix
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:9000/api";
+const API_URL = "";
 
 const zone_region_divisions = {
     "Central Western Zone": {
@@ -144,7 +144,7 @@ function App() {
     setLoading(true);
     try {
       // ✅ Send data exactly matching MySQL schema
-      await axios.post(`${API_URL}/add-to-db/`, formData);
+      await axios.post(`/api/add-to-sheet/`, formData);
       setSubmitted(true);
       setSelectedZone(""); setSelectedRegion(""); setSelectedDivision("");
       setFormData({
