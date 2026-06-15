@@ -141,7 +141,7 @@ function App() {
     setLoading(true);
     try {
       // ✅ Correct endpoint matching backend
-      await axios.post(`${API_URL}/add-to-sheet/`, formData);
+      await axios.post(`/api/add-to-sheet/`, formData);
       setSubmitted(true);
       setSelectedZone(""); setSelectedRegion(""); setSelectedDivision("");
       setFormData({
