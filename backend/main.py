@@ -41,6 +41,7 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             entrepreneur_full_name=data.get("entrepreneur_full_name", ""),
             entrepreneur_phone_whatsapp=data.get("entrepreneur_phone_whatsapp", ""),
             entrepreneur_business_name_type=data.get("entrepreneur_business_name_type", ""),
+            entrepreneur_business_location=data.get("entrepreneur_business_location", ""),
             entrepreneur_sector=data.get("entrepreneur_sector", ""),
             entrepreneur_years_in_business=data.get("entrepreneur_years_in_business", ""),
             entrepreneur_can_mentor=data.get("entrepreneur_can_mentor", ""),

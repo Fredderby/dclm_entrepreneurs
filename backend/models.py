@@ -14,6 +14,7 @@ class SheetData(Base):
     entrepreneur_full_name = Column(String(255))
     entrepreneur_phone_whatsapp = Column(String(50))
     entrepreneur_business_name_type = Column(String(255))
+    entrepreneur_business_location = Column(String(255))
     entrepreneur_sector = Column(String(100))
     entrepreneur_years_in_business = Column(String(50))
     entrepreneur_can_mentor = Column(String(10))
