@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-// ✅ Correct API URL — matches backend port & prefix
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:9000/api";
+// ✅ Correct API URL — matches backend port 8099
+const API_URL = "http://127.0.0.1:8099/api";
 
 const zone_region_divisions = {
     "Central Western Zone": {
@@ -60,7 +60,7 @@ function App() {
     entrepreneur_full_name: "",
     entrepreneur_phone_whatsapp: "",
     entrepreneur_business_name_type: "",
-    entrepreneur_business_location: "", // ✅ NEW FIELD
+    entrepreneur_business_location: "",
     entrepreneur_sector: "",
     entrepreneur_years_in_business: "",
     entrepreneur_can_mentor: ""
@@ -86,15 +86,15 @@ function App() {
     else if (!isValidPhone(formData.pastor_contact)) errors.push("• Pastor Contact must be exactly 10 digits");
 
     if (!formData.entrepreneur_full_name.trim()) errors.push("• Entrepreneur: Full Name required");
-    else if (hasNumbers(formData.entrepreneur_full_name)) errors.push("• Entrepreneur: Name cannot have numbers");
+    else if (hasNumbers(formData.entrepreneur_full_name)) errors.push("• Entrepreneur: Name cannot contain numbers");
 
     if (!formData.entrepreneur_phone_whatsapp.trim()) errors.push("• Entrepreneur: Phone required");
     else if (!isValidPhone(formData.entrepreneur_phone_whatsapp)) errors.push("• Entrepreneur: Phone must be 10 digits");
 
     if (!formData.entrepreneur_business_name_type.trim()) errors.push("• Entrepreneur: Business Name required");
-    else if (hasNumbers(formData.entrepreneur_business_name_type)) errors.push("• Entrepreneur: Business Name cannot have numbers");
+    else if (hasNumbers(formData.entrepreneur_business_name_type)) errors.push("• Entrepreneur: Business Name cannot contain numbers");
 
-    if (!formData.entrepreneur_business_location.trim()) errors.push("• Entrepreneur: Location of Business is required"); // ✅ NEW VALIDATION
+    if (!formData.entrepreneur_business_location.trim()) errors.push("• Entrepreneur: Location of Business is required");
 
     if (!formData.entrepreneur_sector) errors.push("• Entrepreneur: Select Business Sector");
     if (!formData.entrepreneur_years_in_business) errors.push("• Entrepreneur: Select Years in Business");
@@ -140,8 +140,8 @@ function App() {
     if (!window.confirm("⚠️ Double-check all details before final submission.\n\nDo you want to submit now?")) return;
     setLoading(true);
     try {
-      // ✅ Send data exactly matching MySQL schema
-      await axios.post(`${API_URL}/add-to-db/`, formData);
+      // ✅ Correct endpoint matching backend
+      await axios.post(`${API_URL}/add-to-sheet/`, formData);
       setSubmitted(true);
       setSelectedZone(""); setSelectedRegion(""); setSelectedDivision("");
       setFormData({
@@ -170,7 +170,7 @@ function App() {
       minHeight: '100vh', 
       background: 'linear-gradient(135deg, #eaf4ff 0%, #f0f8ff 100%)', 
       padding: '1.5rem 1rem', 
-      fontFamily: 'Segoe UI, Roboto, sans-serif', 
+      fontFamily: "'Segoe UI', Roboto, sans-serif", 
       boxSizing: 'border-box'
     }}>
       <div style={{
@@ -379,7 +379,6 @@ function App() {
                 <input type="text" name="entrepreneur_business_name_type" value={formData.entrepreneur_business_name_type} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box', transition: 'all 0.2s'}} />
               </div>
 
-              {/* ✅ NEW FIELD: Location of Business */}
               <div style={{marginBottom:'1.5rem', width: '100%', boxSizing: 'border-box'}}>
                 <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem', color: '#334155' }}>Location of Business <span style={{color:'red'}}>*</span></label>
                 <input type="text" name="entrepreneur_business_location" value={formData.entrepreneur_business_location} onChange={handleChange} required placeholder="e.g. City, Town, District" style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box', transition: 'all 0.2s'}} />
@@ -417,7 +416,7 @@ function App() {
                   </select>
                 </div>
                 <div style={{width: '100%', boxSizing: 'border-box'}}>
-                  <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem', color: '#334155' }}>Can Mentor? <span style={{color:'red'}}>*</span></label>
+                  <label style={{ fontSize:'0.95rem', display:'block', marginBottom:'0.5rem', color: '#334155' }}>Available to Mentor? <span style={{color:'red'}}>*</span></label>
                   <select name="entrepreneur_can_mentor" value={formData.entrepreneur_can_mentor} onChange={handleChange} required style={{width:'100%', padding:'0.9rem 1rem', borderRadius:'8px', border:'1px solid #cfd8dc', fontSize:'0.95rem', boxSizing: 'border-box', transition: 'all 0.2s'}}>
                     <option value="">-- Select --</option>
                     <option value="Yes">Yes</option>
@@ -441,10 +440,10 @@ function App() {
                 fontWeight:600,
                 fontSize:'1.05rem',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                minWidth: '180px',
+                minWidth:'180px',
                 boxShadow: '0 4px 12px rgba(26, 115, 232, 0.2)',
                 transition: 'all 0.3s ease',
-                transform: loading ? 'none' : 'translateY(0)',
+                transform: 'translateY(0)',
               }}
               onMouseOver={(e) => !loading && (e.target.style.transform = 'translateY(-2px)')}
               onMouseOut={(e) => !loading && (e.target.style.transform = 'translateY(0)')}
@@ -462,7 +461,7 @@ function App() {
           borderTop:'1px solid #eaf4ff',
           paddingTop:'1.2rem'
         }}>
-          DCLM-Ghana • Entrepreneurship Database System
+          DCLM-Ghana • Entrepreneurship Database System © 2026
         </div>
       </div>
     </div>
