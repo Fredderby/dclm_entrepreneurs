@@ -9,19 +9,13 @@ class SheetData(Base):
     zone = Column(String(255))
     region = Column(String(255))
     division = Column(String(255))
-    
-    # ✅ Renamed from enterprise_coordinator_* → pastor_*
-    pastor_name = Column(String(255))
-    pastor_contact = Column(String(50))
-    
+    enterprise_coordinator_name = Column(String(255))
+    enterprise_coordinator_contact = Column(String(50))
     entrepreneur_full_name = Column(String(255))
     entrepreneur_phone_whatsapp = Column(String(50))
     entrepreneur_business_name_type = Column(String(255))
-    # ✅ Added new field
-    entrepreneur_business_location = Column(String(255))
     entrepreneur_sector = Column(String(100))
     entrepreneur_years_in_business = Column(String(50))
     entrepreneur_can_mentor = Column(String(10))
-    
     extra_data = Column(Text, nullable=True)
     synced_at = Column(String(50), nullable=True)
