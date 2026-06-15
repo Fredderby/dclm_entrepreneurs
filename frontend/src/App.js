@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 
 // ✅ Correct API URL — matches backend port 8099
-const API_URL = "http://127.0.0.1:8099/api";
+const API_URL = "";
 
 const zone_region_divisions = {
     "Central Western Zone": {
