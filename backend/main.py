@@ -40,7 +40,8 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
             pastor_contact=data.get("pastor_contact", ""),
             entrepreneur_full_name=data.get("entrepreneur_full_name", ""),
             entrepreneur_phone_whatsapp=data.get("entrepreneur_phone_whatsapp", ""),
-            entrepreneur_business_name_type=data.get("entrepreneur_business_name_type", ""),
+            entrepreneur_business_name=data.get("entrepreneur_business_name", ""),
+            entrepreneur_business_type=data.get("entrepreneur_business_type", ""),
             entrepreneur_business_location=data.get("entrepreneur_business_location", ""),
             entrepreneur_sector=data.get("entrepreneur_sector", ""),
             entrepreneur_years_in_business=data.get("entrepreneur_years_in_business", ""),
@@ -56,4 +57,8 @@ def add_to_sheet(data: dict, db: Session = Depends(get_db)):
         print(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+import pathlib
+
+_static = pathlib.Path("static")
+if _static.is_dir() and any(_static.iterdir()):
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")

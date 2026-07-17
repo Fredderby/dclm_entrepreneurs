@@ -15,8 +15,8 @@ class SubmissionCreate(BaseModel):
 
     entrepreneur_full_name: Optional[str] = None
     entrepreneur_phone_whatsapp: Optional[str] = None
-    entrepreneur_business_name_type: Optional[str] = None
-    # ✅ Added new field
+    entrepreneur_business_name: Optional[str] = None
+    entrepreneur_business_type: Optional[str] = None
     entrepreneur_business_location: Optional[str] = None
     entrepreneur_sector: Optional[str] = None
     entrepreneur_years_in_business: Optional[str] = None
