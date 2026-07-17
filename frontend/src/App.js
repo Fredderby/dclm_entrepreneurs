@@ -313,7 +313,7 @@ function App() {
                   display:"flex", alignItems:"center", justifyContent:"center",
                   fontSize:"0.7rem", fontWeight:700, color:"#fff", flexShrink:0,
                 }}>1</span>
-                <h3 style={{ margin:0, fontSize:"0.95rem", fontWeight:700, color:"#fff" }}>Region & Pastor Information</h3>
+                <h3 style={{ margin:0, fontSize:"0.95rem", fontWeight:700, color:"#fff" }}>Region & Pastor's Information</h3>
               </div>
               <div style={{ padding:"1.25rem 1.5rem" }}>
                 <div className="g3" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"0.9rem", marginBottom:"0.75rem" }}>
