@@ -103,6 +103,19 @@ const GLOBAL_CSS = `
   @keyframes pShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
   @keyframes pPulse{0%,100%{opacity:1}50%{opacity:.5}}
   @keyframes pCheckScale{0%{transform:scale(0)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+  @keyframes pFloat1{0%,100%{transform:translateY(0) translateX(0)}25%{transform:translateY(-20px) translateX(8px)}50%{transform:translateY(-8px) translateX(-5px)}75%{transform:translateY(-25px) translateX(3px)}}
+  @keyframes pFloat2{0%,100%{transform:translateY(0) translateX(0)}33%{transform:translateY(-18px) translateX(-10px)}66%{transform:translateY(-30px) translateX(6px)}}
+  @keyframes pFloat3{0%,100%{transform:translateY(0) translateX(0)}50%{transform:translateY(-15px) translateX(12px)}}
+  @keyframes pDriftLeft{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+  @keyframes pDriftRight{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-10px) rotate(-3deg)}}
+  @keyframes pSpinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes pSpinSlowR{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+  @keyframes pPulseDot{0%,100%{opacity:.06;transform:scale(1)}50%{opacity:.15;transform:scale(1.8)}}
+  .p-drift-left{animation:pDriftLeft 7s ease-in-out infinite}
+  .p-drift-right{animation:pDriftRight 8s ease-in-out infinite}
+  .p-spin-slow{animation:pSpinSlow 20s linear infinite}
+  .p-spin-slow-r{animation:pSpinSlowR 18s linear infinite}
+  .p-pulse-dot{animation:pPulseDot 3s ease-in-out infinite}
   .p-up{animation:pFormUp .5s cubic-bezier(.22,1,.36,1) both}
   .p-up-d1{animation-delay:.05s}
   .p-up-d2{animation-delay:.12s}
@@ -423,64 +436,252 @@ function App() {
 
       <div style={{ minHeight: "100vh", background: C.bgGrad, padding: 0 }}>
 
-        {/* ── Header ── */}
-        <header className="p-hdr" style={{
-          background: C.header,
-          padding: "1.1rem 2rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1rem",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
+        {/* ── Hero Section ── */}
+        <div style={{
+          position: "relative", overflow: "hidden",
+          background: "linear-gradient(135deg,#0f172a 0%,#1e3a5f 40%,#1e40af 100%)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: ".85rem" }}>
-            <img
-              src="/dclmlogo.JPG" alt="DCLM"
-              style={{ height: "44px", width: "auto", objectFit: "contain", borderRadius: "8px", background: "rgba(255,255,255,0.95)", padding: "4px 8px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
-              onError={(e) => { e.target.style.display = "none"; }}
-            />
-            <div>
-              <h1 style={{ color: "#fff", fontSize: "clamp(0.95rem,2.5vw,1.15rem)", margin: 0, fontWeight: 800, lineHeight: 1.3, letterSpacing: "-.01em" }}>
-                DCLM-Ghana Entrepreneurship Database
-              </h1>
-              <p style={{ color: "#94a3b8", fontSize: ".72rem", margin: "3px 0 0", fontWeight: 400, letterSpacing: ".01em" }}>
-                Collect and manage entrepreneur data efficiently
-              </p>
-            </div>
+          {/* Background SVG illustration - sketched entrepreneurs */}
+          <div style={{ position: "absolute", inset: 0, opacity: 0.07, pointerEvents: "none" }}>
+            <svg width="100%" height="100%" viewBox="0 0 1200 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              {/* Person 1 - standing with briefcase */}
+              <g stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="180" cy="120" r="18"/>
+                <path d="M180 138v60"/>
+                <path d="M180 155l-25 30"/>
+                <path d="M180 155l25 30"/>
+                <path d="M180 198l-20 40"/>
+                <path d="M180 198l20 40"/>
+                <rect x="205" y="155" width="22" height="18" rx="2"/>
+                <path d="M205 164h22"/>
+                <path d="M216 173v10"/>
+              </g>
+              {/* Person 2 - with laptop */}
+              <g stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="380" cy="100" r="20"/>
+                <path d="M380 120v55"/>
+                <path d="M380 140l-28 25"/>
+                <path d="M380 140l28 25"/>
+                <path d="M380 175l-22 42"/>
+                <path d="M380 175l22 42"/>
+                <rect x="350" y="140" width="60" height="3" rx="1.5"/>
+                <path d="M355 137l25-12 25 12"/>
+              </g>
+              {/* Person 3 - woman entrepreneur */}
+              <g stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="600" cy="110" r="17"/>
+                <path d="M600 127v55"/>
+                <path d="M600 145l-22 28"/>
+                <path d="M600 145l22 28"/>
+                <path d="M600 182l-18 38"/>
+                <path d="M600 182l18 38"/>
+                <path d="M583 110c0-10 7-18 17-18"/>
+                <path d="M617 110c0-10-7-18-17-18"/>
+              </g>
+              {/* Person 4 - with chart */}
+              <g stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="820" cy="115" r="19"/>
+                <path d="M820 134v55"/>
+                <path d="M820 152l-26 28"/>
+                <path d="M820 152l26 28"/>
+                <path d="M820 180l-20 42"/>
+                <path d="M820 180l20 42"/>
+                <rect x="790" y="100" width="60" height="40" rx="3"/>
+                <polyline points="798,132 806,120 818,128 832,108" stroke="#fff" strokeWidth="1.2"/>
+              </g>
+              {/* Person 5 - with gears */}
+              <g stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="1020" cy="108" r="18"/>
+                <path d="M1020 126v55"/>
+                <path d="M1020 145l-24 26"/>
+                <path d="M1020 145l24 26"/>
+                <path d="M1020 171l-18 40"/>
+                <path d="M1020 171l18 40"/>
+                <circle cx="980" cy="80" r="14" strokeDasharray="3 3"/>
+                <circle cx="1060" cy="75" r="10" strokeDasharray="3 3"/>
+              </g>
+              {/* Connecting lines / network dots */}
+              <g stroke="#fff" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.5">
+                <line x1="198" y1="155" x2="352" y2="140"/>
+                <line x1="402" y1="140" x2="578" y2="145"/>
+                <line x1="622" y1="145" x2="794" y2="152"/>
+                <line x1="846" y1="152" x2="996" y2="145"/>
+              </g>
+              {/* Floating dots */}
+              <g fill="#fff" opacity="0.3">
+                <circle cx="120" cy="60" r="3"/><circle cx="300" cy="50" r="2"/>
+                <circle cx="500" cy="40" r="2.5"/><circle cx="700" cy="55" r="2"/>
+                <circle cx="900" cy="45" r="3"/><circle cx="1100" cy="55" r="2"/>
+                <circle cx="250" cy="280" r="2"/><circle cx="450" cy="290" r="2.5"/>
+                <circle cx="650" cy="275" r="2"/><circle cx="850" cy="285" r="3"/>
+              </g>
+            </svg>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
-            <div className="p-qr" style={{
-              display: "flex", alignItems: "center", gap: ".55rem",
-              background: "rgba(255,255,255,0.07)", borderRadius: "10px",
-              padding: ".4rem .7rem", border: "1px solid rgba(255,255,255,0.08)",
-            }}>
-              <img src="/qr_code.png" alt="QR"
-                style={{ width: "40px", height: "40px", borderRadius: "6px", background: "#fff", padding: "2px" }} />
+
+          {/* Gradient overlay for depth */}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "radial-gradient(ellipse at 30% 50%, rgba(37,99,235,0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(124,58,237,0.1) 0%, transparent 60%)",
+            pointerEvents: "none",
+          }} />
+
+          {/* Content */}
+          <div style={{
+            position: "relative", zIndex: 1,
+            maxWidth: "900px", margin: "0 auto",
+            padding: "2.25rem 1.5rem 2rem",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            flexWrap: "wrap", gap: "1.25rem",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{
+                width: "60px", height: "60px", borderRadius: "16px",
+                background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.15)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0, backdropFilter: "blur(8px)",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }}>
+                <img
+                  src="/dclmlogo.JPG" alt="DCLM"
+                  style={{ height: "40px", width: "auto", objectFit: "contain", borderRadius: "8px" }}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.parentElement.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+                  }}
+                />
+              </div>
               <div>
-                <p style={{ color: "#e2e8f0", fontSize: ".68rem", margin: 0, fontWeight: 600, lineHeight: 1.2 }}>Scan to open</p>
-                <p style={{ color: "#64748b", fontSize: ".58rem", margin: 0, lineHeight: 1.2 }}>ent.dclmgh-report.com</p>
+                <h1 style={{
+                  color: "#fff", fontSize: "clamp(1.1rem,3vw,1.5rem)", margin: 0,
+                  fontWeight: 800, lineHeight: 1.25, letterSpacing: "-.02em",
+                  textShadow: "0 2px 12px rgba(0,0,0,0.2)",
+                }}>
+                  DCLM-Ghana<br/>
+                  <span style={{ background: "linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    Entrepreneurship Database
+                  </span>
+                </h1>
+                <p style={{
+                  color: "rgba(255,255,255,0.55)", fontSize: ".78rem",
+                  margin: "6px 0 0", fontWeight: 400, letterSpacing: ".02em",
+                }}>
+                  Empowering entrepreneurs across Ghana
+                </p>
               </div>
             </div>
-            <button
-              onClick={() => setView("admin")}
-              style={{
-                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
-                borderRadius: "10px", padding: ".55rem .9rem", cursor: "pointer",
-                color: "#e2e8f0", fontSize: ".75rem", fontWeight: 600,
-                display: "flex", alignItems: "center", gap: ".4rem",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.14)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-            >
-              <svg style={{width:14,height:14}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              Admin
-            </button>
-          </div>
-        </header>
 
-        <div style={{ maxWidth: "780px", margin: "0 auto", padding: "1.75rem 1rem 2.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: ".85rem" }}>
+              <div className="p-qr" style={{
+                display: "flex", alignItems: "center", gap: ".55rem",
+                background: "rgba(255,255,255,0.08)", borderRadius: "12px",
+                padding: ".5rem .75rem", border: "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(8px)",
+              }}>
+                <img src="/qr_code.png" alt="QR"
+                  style={{ width: "42px", height: "42px", borderRadius: "8px", background: "#fff", padding: "2px" }} />
+                <div>
+                  <p style={{ color: "#e2e8f0", fontSize: ".68rem", margin: 0, fontWeight: 600, lineHeight: 1.3 }}>Scan to open</p>
+                  <p style={{ color: "rgba(255,255,255,0.4)", fontSize: ".58rem", margin: 0, lineHeight: 1.3 }}>ent.dclmgh-report.com</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setView("admin")}
+                style={{
+                  background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)",
+                  borderRadius: "10px", padding: ".6rem 1rem", cursor: "pointer",
+                  color: "#e2e8f0", fontSize: ".75rem", fontWeight: 600,
+                  display: "flex", alignItems: "center", gap: ".4rem",
+                  transition: "all 0.25s", backdropFilter: "blur(8px)",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.transform = "translateY(0)"; }}
+              >
+                <svg style={{width:14,height:14}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Admin
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom wave decoration */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg,#2563eb,#7c3aed,#ec4899,#2563eb)", backgroundSize: "200% 100%" }} />
+        </div>
+
+        {/* ── Animated Background Decorations ── */}
+        <div style={{ position: "relative" }}>
+
+        {/* Floating orb - left top */}
+        <div style={{
+          position: "fixed", top: "15%", left: "3%", width: "200px", height: "200px",
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)",
+          animation: "pFloat1 8s ease-in-out infinite", pointerEvents: "none", zIndex: 0,
+        }} />
+        {/* Floating orb - right mid */}
+        <div style={{
+          position: "fixed", top: "40%", right: "2%", width: "240px", height: "240px",
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%)",
+          animation: "pFloat2 10s ease-in-out infinite", pointerEvents: "none", zIndex: 0,
+        }} />
+        {/* Floating orb - left bottom */}
+        <div style={{
+          position: "fixed", bottom: "20%", left: "5%", width: "180px", height: "180px",
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(236,72,153,0.14) 0%, transparent 70%)",
+          animation: "pFloat3 9s ease-in-out infinite", pointerEvents: "none", zIndex: 0,
+        }} />
+        {/* Floating orb - right bottom */}
+        <div style={{
+          position: "fixed", bottom: "10%", right: "4%", width: "190px", height: "190px",
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(20,184,166,0.14) 0%, transparent 70%)",
+          animation: "pFloat1 11s ease-in-out infinite reverse", pointerEvents: "none", zIndex: 0,
+        }} />
+
+        {/* Sketchy business icons - left side */}
+        <svg className="p-drift-left" style={{ position: "fixed", top: "22%", left: "2%", opacity: 0.12, pointerEvents: "none", zIndex: 0 }} width="80" height="80" viewBox="0 0 80 80" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round">
+          <rect x="15" y="25" width="50" height="35" rx="3"/><path d="M15 35h50"/><path d="M30 25V18h20v7"/><circle cx="40" cy="48" r="6"/>
+        </svg>
+        <svg className="p-drift-left" style={{ position: "fixed", top: "55%", left: "3%", opacity: 0.10, pointerEvents: "none", zIndex: 0, animationDelay: "2s" }} width="70" height="70" viewBox="0 0 70 70" fill="none" stroke="#7c3aed" strokeWidth="1.2" strokeLinecap="round">
+          <path d="M10 55L25 20l15 25 10-15 15 25"/><circle cx="10" cy="55" r="3" fill="#7c3aed" stroke="none"/><circle cx="65" cy="55" r="3" fill="#7c3aed" stroke="none"/>
+        </svg>
+
+        {/* Sketchy business icons - right side */}
+        <svg className="p-drift-right" style={{ position: "fixed", top: "30%", right: "2%", opacity: 0.12, pointerEvents: "none", zIndex: 0 }} width="75" height="75" viewBox="0 0 75 75" fill="none" stroke="#ec4899" strokeWidth="1.2" strokeLinecap="round">
+          <circle cx="37.5" cy="25" r="12"/><path d="M37.5 37v20"/><path d="M37.5 45l-15 12"/><path d="M37.5 45l15 12"/><path d="M37.5 57l-12 12"/><path d="M37.5 57l12 12"/>
+        </svg>
+        <svg className="p-drift-right" style={{ position: "fixed", top: "65%", right: "3%", opacity: 0.10, pointerEvents: "none", zIndex: 0, animationDelay: "3s" }} width="65" height="65" viewBox="0 0 65 65" fill="none" stroke="#0891b2" strokeWidth="1.2" strokeLinecap="round">
+          <path d="M32.5 8l24 14v21l-24 14-24-14V22z"/><path d="M32.5 8v49"/><path d="M8.5 22l24 14 24-14"/>
+        </svg>
+
+        {/* Floating geometric shapes */}
+        <div className="p-spin-slow" style={{
+          position: "fixed", top: "18%", right: "8%", width: "40px", height: "40px",
+          border: "1.5px solid rgba(37,99,235,0.15)", borderRadius: "8px",
+          pointerEvents: "none", zIndex: 0,
+        }} />
+        <div className="p-spin-slow-r" style={{
+          position: "fixed", top: "50%", left: "6%", width: "30px", height: "30px",
+          border: "1.5px solid rgba(124,58,237,0.15)", borderRadius: "50%",
+          pointerEvents: "none", zIndex: 0,
+        }} />
+        <div className="p-spin-slow" style={{
+          position: "fixed", bottom: "25%", right: "7%", width: "35px", height: "35px",
+          border: "1.5px solid rgba(236,72,153,0.15)", borderRadius: "6px", transform: "rotate(45deg)",
+          pointerEvents: "none", zIndex: 0, animationDelay: "1.5s",
+        }} />
+        <div className="p-spin-slow-r" style={{
+          position: "fixed", bottom: "35%", left: "8%", width: "25px", height: "25px",
+          border: "1.5px solid rgba(20,184,166,0.15)", borderRadius: "50%",
+          pointerEvents: "none", zIndex: 0, animationDelay: "2s",
+        }} />
+
+        {/* Pulsing dots */}
+        <div className="p-pulse-dot" style={{ position: "fixed", top: "35%", left: "4%", width: "8px", height: "8px", borderRadius: "50%", background: "rgba(37,99,235,0.25)", pointerEvents: "none", zIndex: 0 }} />
+        <div className="p-pulse-dot" style={{ position: "fixed", top: "28%", right: "5%", width: "7px", height: "7px", borderRadius: "50%", background: "rgba(124,58,237,0.25)", pointerEvents: "none", zIndex: 0, animationDelay: ".8s" }} />
+        <div className="p-pulse-dot" style={{ position: "fixed", top: "70%", left: "7%", width: "7px", height: "7px", borderRadius: "50%", background: "rgba(236,72,153,0.25)", pointerEvents: "none", zIndex: 0, animationDelay: "1.6s" }} />
+        <div className="p-pulse-dot" style={{ position: "fixed", bottom: "15%", right: "6%", width: "8px", height: "8px", borderRadius: "50%", background: "rgba(20,184,166,0.25)", pointerEvents: "none", zIndex: 0, animationDelay: "2.4s" }} />
+        <div className="p-pulse-dot" style={{ position: "fixed", top: "45%", left: "5%", width: "6px", height: "6px", borderRadius: "50%", background: "rgba(37,99,235,0.20)", pointerEvents: "none", zIndex: 0, animationDelay: "3s" }} />
+        <div className="p-pulse-dot" style={{ position: "fixed", top: "60%", right: "4%", width: "6px", height: "6px", borderRadius: "50%", background: "rgba(124,58,237,0.20)", pointerEvents: "none", zIndex: 0, animationDelay: "1.2s" }} />
+
+        <div style={{ maxWidth: "780px", margin: "0 auto", padding: "1.75rem 1rem 2.5rem", position: "relative", zIndex: 1 }}>
 
           {/* ── Alerts ── */}
           {error && (
@@ -515,7 +716,7 @@ function App() {
 
             {/* ── Section A: Region & Pastor ── */}
             <div className="p-card p-up p-up-d1">
-              <SectionHeader number={1} title="Region & Pastor's Information" />
+              <SectionHeader number={1} title="Entrepreneur's Church Information" />
               <div style={{ padding: "1.35rem 1.5rem" }}>
                 <div className="p-g3" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: ".9rem", marginBottom: ".5rem" }}>
                   <div>
@@ -638,6 +839,7 @@ function App() {
           }}>
             DCLM-Ghana &middot; Entrepreneurship Database System &copy; 2026
           </div>
+        </div>
         </div>
       </div>
     </>
