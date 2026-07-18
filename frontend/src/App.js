@@ -157,7 +157,7 @@ const SectionHeader = memo(function SectionHeader({ number, title }) {
   );
 });
 
-const FieldInput = memo(function FieldInput({ label, hint, maxLength, name, value, error, touched, onChange, onBlur, ...props }) {
+const FieldInput = memo(function FieldInput({ label, hint, maxLength, name, value, error, touched, onChange, onBlur, icon, placeholder, ...props }) {
   const err = touched && error;
   const len = value ? value.length : 0;
   const pct = maxLength ? Math.min((len / maxLength) * 100, 100) : 0;
@@ -172,16 +172,33 @@ const FieldInput = memo(function FieldInput({ label, hint, maxLength, name, valu
         {label} {hint && <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: ".7rem", textTransform: "none", letterSpacing: 0 }}>({hint})</span>}
         <span style={{ color: C.danger, marginLeft: 2 }}>*</span>
       </label>
-      <input
-        className={`p-inp ${err ? "p-err" : ""}`}
-        name={name}
-        maxLength={maxLength}
-        value={value || ""}
-        onChange={onChange}
-        onBlur={onBlur}
-        autoComplete="off"
-        {...props}
-      />
+      <div style={{ position: "relative" }}>
+        {icon && (
+          <span style={{
+            position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)",
+            display: "flex", alignItems: "center", pointerEvents: "none", color: err ? C.danger : "#94a3b8",
+            transition: "color .2s", zIndex: 1,
+          }}>{icon}</span>
+        )}
+        <input
+          className={`p-inp ${err ? "p-err" : ""}`}
+          name={name}
+          maxLength={maxLength}
+          value={value || ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          autoComplete="off"
+          placeholder={placeholder}
+          style={{
+            width: "100%", padding: ".72rem 1rem", paddingLeft: icon ? "2.4rem" : "1rem",
+            borderRadius: "10px", border: "1.5px solid " + (err ? C.danger : C.border),
+            fontSize: ".88rem", fontFamily: "inherit", boxSizing: "border-box", outline: "none",
+            background: "#fff", color: C.text,
+            transition: "border-color .2s, box-shadow .2s, background .2s",
+          }}
+          {...props}
+        />
+      </div>
       {maxLength > 0 && (
         <div style={{ marginTop: ".35rem" }}>
           <div style={{ height: 3, borderRadius: 2, background: "#e5e7eb", overflow: "hidden" }}>
@@ -206,7 +223,7 @@ const FieldInput = memo(function FieldInput({ label, hint, maxLength, name, valu
   );
 });
 
-const FieldSelect = memo(function FieldSelect({ label, name, value, error, touched, onChange, onBlur, children, ...props }) {
+const FieldSelect = memo(function FieldSelect({ label, name, value, error, touched, onChange, onBlur, children, icon, placeholder, ...props }) {
   const err = touched && error;
   return (
     <div style={{ marginBottom: ".15rem" }}>
@@ -216,14 +233,30 @@ const FieldSelect = memo(function FieldSelect({ label, name, value, error, touch
       }}>
         {label} <span style={{ color: C.danger, marginLeft: 2 }}>*</span>
       </label>
-      <select
-        className={`p-inp p-sel ${err ? "p-err" : ""}`}
-        name={name}
-        value={value || ""}
-        onChange={onChange}
-        onBlur={onBlur}
-        {...props}
-      >{children}</select>
+      <div style={{ position: "relative" }}>
+        {icon && (
+          <span style={{
+            position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)",
+            display: "flex", alignItems: "center", pointerEvents: "none", color: err ? C.danger : "#94a3b8",
+            transition: "color .2s", zIndex: 1,
+          }}>{icon}</span>
+        )}
+        <select
+          className={`p-inp p-sel ${err ? "p-err" : ""}`}
+          name={name}
+          value={value || ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          style={{
+            width: "100%", padding: ".72rem 1rem", paddingLeft: icon ? "2.4rem" : "1rem",
+            borderRadius: "10px", border: "1.5px solid " + (err ? C.danger : C.border),
+            fontSize: ".88rem", fontFamily: "inherit", boxSizing: "border-box", outline: "none",
+            background: "#fff", color: value ? C.text : "#94a3b8",
+            transition: "border-color .2s, box-shadow .2s, background .2s",
+          }}
+          {...props}
+        >{children}</select>
+      </div>
       {err && (
         <p style={{ margin: ".3rem 0 0", fontSize: ".73rem", color: C.danger, fontWeight: 500, display: "flex", alignItems: "center", gap: "0.3rem" }}>
           <svg style={{width:12,height:12,flexShrink:0}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
@@ -723,44 +756,64 @@ function App() {
                     <label style={{ fontWeight: 600, fontSize: ".72rem", display: "block", marginBottom: ".4rem", color: C.muted, textTransform: "uppercase", letterSpacing: ".06em" }}>
                       Zone <span style={{ color: C.danger, marginLeft: 2 }}>*</span>
                     </label>
-                    <select className={`p-inp p-sel ${touched.zone && fieldErrors.zone ? "p-err" : ""}`}
-                      value={selectedZone} onChange={handleZoneChange}
-                      onBlur={() => markTouched("zone")}>
-                      <option value="">-- Select Zone --</option>
-                      {Object.keys(zone_region_divisions).map(z => <option key={z} value={z}>{z}</option>)}
-                    </select>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", color: "#94a3b8", zIndex: 1 }}>
+                        <svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                      </span>
+                      <select className={`p-inp p-sel ${touched.zone && fieldErrors.zone ? "p-err" : ""}`}
+                        value={selectedZone} onChange={handleZoneChange}
+                        onBlur={() => markTouched("zone")}
+                        style={{ width: "100%", padding: ".72rem 1rem", paddingLeft: "2.4rem", borderRadius: "10px", border: "1.5px solid " + (touched.zone && fieldErrors.zone ? C.danger : C.border), fontSize: ".88rem", fontFamily: "inherit", boxSizing: "border-box", outline: "none", background: "#fff", color: selectedZone ? C.text : "#94a3b8", transition: "border-color .2s, box-shadow .2s" }}>
+                        <option value="">Select zone...</option>
+                        {Object.keys(zone_region_divisions).map(z => <option key={z} value={z}>{z}</option>)}
+                      </select>
+                    </div>
                     {touched.zone && fieldErrors.zone && <p style={{ margin: ".3rem 0 0", fontSize: ".73rem", color: C.danger, fontWeight: 500, display: "flex", alignItems: "center", gap: ".3rem" }}><svg style={{width:12,height:12,flexShrink:0}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{fieldErrors.zone}</p>}
                   </div>
                   <div>
                     <label style={{ fontWeight: 600, fontSize: ".72rem", display: "block", marginBottom: ".4rem", color: C.muted, textTransform: "uppercase", letterSpacing: ".06em" }}>
                       Region <span style={{ color: C.danger, marginLeft: 2 }}>*</span>
                     </label>
-                    <select className={`p-inp p-sel ${touched.region && fieldErrors.region ? "p-err" : ""}`}
-                      value={selectedRegion} onChange={handleRegionChange}
-                      disabled={!selectedZone}
-                      onBlur={() => markTouched("region")}>
-                      <option value="">-- Select Region --</option>
-                      {selectedZone && Object.keys(zone_region_divisions[selectedZone]).map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", color: "#94a3b8", zIndex: 1 }}>
+                        <svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      </span>
+                      <select className={`p-inp p-sel ${touched.region && fieldErrors.region ? "p-err" : ""}`}
+                        value={selectedRegion} onChange={handleRegionChange}
+                        disabled={!selectedZone}
+                        onBlur={() => markTouched("region")}
+                        style={{ width: "100%", padding: ".72rem 1rem", paddingLeft: "2.4rem", borderRadius: "10px", border: "1.5px solid " + (touched.region && fieldErrors.region ? C.danger : C.border), fontSize: ".88rem", fontFamily: "inherit", boxSizing: "border-box", outline: "none", background: "#fff", color: selectedRegion ? C.text : "#94a3b8", transition: "border-color .2s, box-shadow .2s" }}>
+                        <option value="">Select region...</option>
+                        {selectedZone && Object.keys(zone_region_divisions[selectedZone]).map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
                     {touched.region && fieldErrors.region && <p style={{ margin: ".3rem 0 0", fontSize: ".73rem", color: C.danger, fontWeight: 500, display: "flex", alignItems: "center", gap: ".3rem" }}><svg style={{width:12,height:12,flexShrink:0}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{fieldErrors.region}</p>}
                   </div>
                   <div>
                     <label style={{ fontWeight: 600, fontSize: ".72rem", display: "block", marginBottom: ".4rem", color: C.muted, textTransform: "uppercase", letterSpacing: ".06em" }}>
                       Division <span style={{ color: C.danger, marginLeft: 2 }}>*</span>
                     </label>
-                    <select className={`p-inp p-sel ${touched.division && fieldErrors.division ? "p-err" : ""}`}
-                      value={selectedDivision} onChange={handleDivisionChange}
-                      disabled={!selectedRegion}
-                      onBlur={() => markTouched("division")}>
-                      <option value="">-- Select Division --</option>
-                      {selectedRegion && zone_region_divisions[selectedZone][selectedRegion].map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", color: "#94a3b8", zIndex: 1 }}>
+                        <svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                      </span>
+                      <select className={`p-inp p-sel ${touched.division && fieldErrors.division ? "p-err" : ""}`}
+                        value={selectedDivision} onChange={handleDivisionChange}
+                        disabled={!selectedRegion}
+                        onBlur={() => markTouched("division")}
+                        style={{ width: "100%", padding: ".72rem 1rem", paddingLeft: "2.4rem", borderRadius: "10px", border: "1.5px solid " + (touched.division && fieldErrors.division ? C.danger : C.border), fontSize: ".88rem", fontFamily: "inherit", boxSizing: "border-box", outline: "none", background: "#fff", color: selectedDivision ? C.text : "#94a3b8", transition: "border-color .2s, box-shadow .2s" }}>
+                        <option value="">Select division...</option>
+                        {selectedRegion && zone_region_divisions[selectedZone][selectedRegion].map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
                     {touched.division && fieldErrors.division && <p style={{ margin: ".3rem 0 0", fontSize: ".73rem", color: C.danger, fontWeight: 500, display: "flex", alignItems: "center", gap: ".3rem" }}><svg style={{width:12,height:12,flexShrink:0}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>{fieldErrors.division}</p>}
                   </div>
                 </div>
                 <div className="p-g2" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: ".9rem", marginTop: ".75rem" }}>
-                  <FieldInput label="Pastor's Name" name="pastor_name" value={formData.pastor_name} error={fieldErrors.pastor_name} touched={!!touched.pastor_name} onChange={handleChange} onBlur={handleBlur("pastor_name")} />
-                  <FieldInput label="Pastor's Contact" hint="10 digits" type="tel" maxLength={10} name="pastor_contact" value={formData.pastor_contact} error={fieldErrors.pastor_contact} touched={!!touched.pastor_contact} onChange={handleChange} onBlur={handleBlur("pastor_contact")} inputMode="numeric" pattern="\d*" />
+                  <FieldInput label="Pastor's Name" name="pastor_name" value={formData.pastor_name} error={fieldErrors.pastor_name} touched={!!touched.pastor_name} onChange={handleChange} onBlur={handleBlur("pastor_name")} placeholder="e.g. Pastor John Mensah"
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
+                  <FieldInput label="Pastor's Contact" hint="10 digits" type="tel" maxLength={10} name="pastor_contact" value={formData.pastor_contact} error={fieldErrors.pastor_contact} touched={!!touched.pastor_contact} onChange={handleChange} onBlur={handleBlur("pastor_contact")} inputMode="numeric" pattern="\d*" placeholder="0243205131"
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>} />
                 </div>
               </div>
             </div>
@@ -770,20 +823,26 @@ function App() {
               <SectionHeader number={2} title="Entrepreneur Details" />
               <div style={{ padding: "1.35rem 1.5rem" }}>
                 <div className="p-g2" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: ".9rem" }}>
-                  <FieldInput label="Full Name" name="entrepreneur_full_name" value={formData.entrepreneur_full_name} error={fieldErrors.entrepreneur_full_name} touched={!!touched.entrepreneur_full_name} onChange={handleChange} onBlur={handleBlur("entrepreneur_full_name")} />
-                  <FieldInput label="Phone / WhatsApp" hint="10 digits" type="tel" maxLength={10} name="entrepreneur_phone_whatsapp" value={formData.entrepreneur_phone_whatsapp} error={fieldErrors.entrepreneur_phone_whatsapp} touched={!!touched.entrepreneur_phone_whatsapp} onChange={handleChange} onBlur={handleBlur("entrepreneur_phone_whatsapp")} inputMode="numeric" pattern="\d*" />
+                  <FieldInput label="Full Name" name="entrepreneur_full_name" value={formData.entrepreneur_full_name} error={fieldErrors.entrepreneur_full_name} touched={!!touched.entrepreneur_full_name} onChange={handleChange} onBlur={handleBlur("entrepreneur_full_name")} placeholder="e.g. Kofi Asante"
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
+                  <FieldInput label="Phone / WhatsApp" hint="10 digits" type="tel" maxLength={10} name="entrepreneur_phone_whatsapp" value={formData.entrepreneur_phone_whatsapp} error={fieldErrors.entrepreneur_phone_whatsapp} touched={!!touched.entrepreneur_phone_whatsapp} onChange={handleChange} onBlur={handleBlur("entrepreneur_phone_whatsapp")} inputMode="numeric" pattern="\d*" placeholder="0241234567"
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>} />
                 </div>
                 <div style={{ marginTop: ".75rem" }}>
-                  <FieldSelect label="Business Type" name="entrepreneur_business_type" {...commonSelectProps("entrepreneur_business_type")}>
-                    <option value="">-- Select Business Type --</option>
+                  <FieldSelect label="Business Type" name="entrepreneur_business_type" {...commonSelectProps("entrepreneur_business_type")}
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 0V4h6v3m0 0v1a3 3 0 0 0 6 0V7M6 21V10m6 11V10m6 11V10"/></svg>}>
+                    <option value="">Select business type...</option>
                     {businessTypes.map(bt => <option key={bt} value={bt}>{bt}</option>)}
                   </FieldSelect>
                 </div>
-                <FieldInput label="Business Name" name="entrepreneur_business_name" value={formData.entrepreneur_business_name} error={fieldErrors.entrepreneur_business_name} touched={!!touched.entrepreneur_business_name} onChange={handleChange} onBlur={handleBlur("entrepreneur_business_name")} />
-                <FieldInput label="Location of Business" hint="City, Town, District" name="entrepreneur_business_location" value={formData.entrepreneur_business_location} error={fieldErrors.entrepreneur_business_location} touched={!!touched.entrepreneur_business_location} onChange={handleChange} onBlur={handleBlur("entrepreneur_business_location")} />
+                <FieldInput label="Business Name" name="entrepreneur_business_name" value={formData.entrepreneur_business_name} error={fieldErrors.entrepreneur_business_name} touched={!!touched.entrepreneur_business_name} onChange={handleChange} onBlur={handleBlur("entrepreneur_business_name")} placeholder="e.g. Asante Trading Enterprise"
+                  icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} />
+                <FieldInput label="Location of Business" hint="City, Town, District" name="entrepreneur_business_location" value={formData.entrepreneur_business_location} error={fieldErrors.entrepreneur_business_location} touched={!!touched.entrepreneur_business_location} onChange={handleChange} onBlur={handleBlur("entrepreneur_business_location")} placeholder="e.g. Kumasi, Ashanti Region"
+                  icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} />
                 <div className="p-g3" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: ".9rem", marginTop: ".5rem" }}>
-                  <FieldSelect label="Sector" name="entrepreneur_sector" {...commonSelectProps("entrepreneur_sector")}>
-                    <option value="">-- Select --</option>
+                  <FieldSelect label="Sector" name="entrepreneur_sector" {...commonSelectProps("entrepreneur_sector")}
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}>
+                    <option value="">Select sector...</option>
                     <option value="Agriculture">Agriculture</option>
                     <option value="Tech/ICT">Tech/ICT</option>
                     <option value="Trading/SME">Trading/SME</option>
@@ -793,15 +852,17 @@ function App() {
                     <option value="Mining">Mining</option>
                     <option value="Other">Other</option>
                   </FieldSelect>
-                  <FieldSelect label="Years in Business" name="entrepreneur_years_in_business" {...commonSelectProps("entrepreneur_years_in_business")}>
-                    <option value="">-- Select --</option>
+                  <FieldSelect label="Years in Business" name="entrepreneur_years_in_business" {...commonSelectProps("entrepreneur_years_in_business")}
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}>
+                    <option value="">Select duration...</option>
                     <option value="<1yr">&lt; 1 year</option>
                     <option value="1-3yrs">1–3 years</option>
                     <option value="3-5yrs">3–5 years</option>
                     <option value="5+yrs">5+ years</option>
                   </FieldSelect>
-                  <FieldSelect label="Available to Mentor?" name="entrepreneur_can_mentor" {...commonSelectProps("entrepreneur_can_mentor")}>
-                    <option value="">-- Select --</option>
+                  <FieldSelect label="Available to Mentor?" name="entrepreneur_can_mentor" {...commonSelectProps("entrepreneur_can_mentor")}
+                    icon={<svg style={{width:16,height:16}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
+                    <option value="">Select option...</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                   </FieldSelect>
